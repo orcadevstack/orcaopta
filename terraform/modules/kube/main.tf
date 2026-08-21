@@ -1,0 +1,3 @@
+module "kube" {
+  source = "../../kube"
+}

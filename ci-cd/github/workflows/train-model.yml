@@ -1,0 +1,36 @@
+name: Train ML Models
+
+on:
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train anomaly model
+        run: python src/ml/anomaly_detection.py
+
+      - name: Train forecast model
+        run: python src/ml/forecasting.py
+
+      - name: Train resource optimizer
+        run: python src/ml/resource_optimization.py
+
+      - name: Train autoscaler
+        run: python src/ml/autoscaling.py
+
+      - name: Upload models to artifact storage
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-models
+          path: models/

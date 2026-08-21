@@ -1,0 +1,14 @@
+services:
+  orcaopta-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: orcaopta-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../models:/app/models
+      - ../src:/app/src
+    environment:
+      PYTHONUNBUFFERED: 1
+    restart: unless-stopped

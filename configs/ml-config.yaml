@@ -1,0 +1,6 @@
+ml:
+  model_path: "models/"
+  anomaly_model: "anomaly_model.pkl"
+  forecast_model: "forecast_model.pkl"
+  resource_model: "resource_opt_model.pkl"
+  autoscale_model: "autoscale_model.pkl"

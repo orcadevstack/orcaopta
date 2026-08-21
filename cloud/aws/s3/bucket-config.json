@@ -1,0 +1,23 @@
+{
+  "BucketName": "orcaopta-models",
+  "Versioning": {
+    "Enabled": true
+  },
+  "LifecycleRules": [
+    {
+      "Id": "ExpireOldArtifacts",
+      "Status": "Enabled",
+      "ExpirationInDays": 30
+    }
+  ],
+  "PublicAccessBlock": {
+    "BlockPublicAcls": true,
+    "BlockPublicPolicy": true,
+    "IgnorePublicAcls": true,
+    "RestrictPublicBuckets": true
+  },
+  "Tags": {
+    "Project": "orcaopta",
+    "Environment": "production"
+  }
+}

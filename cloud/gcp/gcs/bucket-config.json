@@ -1,0 +1,7 @@
+{
+  "location": "EUROPE-WEST1",
+  "storageClass": "STANDARD",
+  "versioning": {
+    "enabled": true
+  }
+}
