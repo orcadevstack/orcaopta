@@ -27,3 +27,6 @@ terraform-staging:
 
 terraform-prod:
     cd terraform && terraform apply -var="cloud=gcp" -var="environment=prod"
+
+notebook:
+    jupyter notebook notebooks/train.ipynb
