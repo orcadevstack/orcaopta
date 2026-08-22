@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi import FastAPI, Request
+from src.utils.tracing import setup_tracing
 import pandas as pd
 
 from src.ml import (
@@ -9,6 +11,10 @@ from src.ml import (
     resource_optimization,
     autoscaling
 )
+
+
+tracer = setup_tracing()
+app = FastAPI()
 
 app = FastAPI(title="orcaopta ML API")
 
@@ -45,3 +51,16 @@ def autoscale(payload: Payload):
     model = model_utils.load_autoscale()
     preds = autoscaling.autoscale_decision(model, df)
     return {"decisions": preds.tolist()}
+
+
+@app.middleware("http")
+async def trace_requests(request: Request, call_next):
+    with tracer.start_as_current_span(f"HTTP {request.method} {request.url.path}") as span:
+        span.set_attribute("method", request.method)
+        span.set_attribute("path", request.url.path)
+        span.set_attribute("client", request.client.host)
+
+        response = await call_next(request)
+        span.set_attribute("status_code", response.status_code)
+
+        return response

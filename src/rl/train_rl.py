@@ -43,3 +43,16 @@ def train_rl(num_episodes=500):
 
 if __name__ == "__main__":
     agent = train_rl()
+
+from src.utils.tracing import setup_tracing
+tracer = setup_tracing()
+
+with tracer.start_as_current_span("rl-training") as span:
+    span.set_attribute("agent", "PPO")
+    span.set_attribute("environment", "orcaopta-rl")
+    # RL loop...
+
+for episode in range(num_episodes):
+    with tracer.start_as_current_span(f"episode-{episode}") as ep_span:
+        ep_span.set_attribute("episode", episode)
+        # RL episode logic...
