@@ -1,0 +1,6 @@
+agent:
+  name: orcaopta-agent
+  model_name: orcaopta-ml
+  stage: Production
+  reload_interval: 30
+  log_level: INFO

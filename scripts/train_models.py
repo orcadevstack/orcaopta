@@ -11,6 +11,10 @@ from src.ml.anomaly_detection import train_anomaly_model
 from src.ml.forecasting import train_forecasting_model
 from src.ml.autoscaling import train_autoscaling_model
 from src.ml.resource_optimization import train_resource_optimizer
+from src.core.security.encryption import decrypt
+
+db_password = decrypt(os.getenv("DB_PASSWORD_ENC").encode()).decode()
+
 
 
 def main():

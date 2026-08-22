@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jupyter-db-pvc
+  namespace: orcaopta
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orcaopta-jupyter
+  namespace: orcaopta
+  labels:
+    app: orcaopta-jupyter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orcaopta-jupyter
+  template:
+    metadata:
+      labels:
+        app: orcaopta-jupyter
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: orcaopta-jupyter
+          image: orcastack/orcaopta-jupyter:latest
+          imagePullPolicy: IfNotPresent
+          command: ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+          ports:
+            - containerPort: 8888
+          env:
+            - name: DB_HOST
+              value: "jupyter-db.orcaopta.svc.cluster.local"
+            - name: DB_USER
+              value: "jupyter"
+            - name: DB_PASS
+              value: "jupyter123"
+            - name: DB_NAME
+              value: "jupyterdb"
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow.orcaopta.svc.cluster.local:5000"
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: "http://minio.orcaopta.svc.cluster.local:9000"
+            - name: FERNET_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: orcaopta-fernet
+                  key: FERNET_KEYS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orcaopta-jupyter
+  namespace: orcaopta
+spec:
+  selector:
+    app: orcaopta-jupyter
+  ports:
+    - port: 8888
+      targetPort: 8888
+      nodePort: 30088
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-db
+  namespace: orcaopta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter-db
+  template:
+    metadata:
+      labels:
+        app: jupyter-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: "jupyter"
+            - name: POSTGRES_PASSWORD
+              value: "jupyter123"
+            - name: POSTGRES_DB
+              value: "jupyterdb"
+          volumeMounts:
+            - name: jupyter-db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: jupyter-db-storage
+          persistentVolumeClaim:
+            claimName: jupyter-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter-db
+  namespace: orcaopta
+spec:
+  selector:
+    app: jupyter-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP

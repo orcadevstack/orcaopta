@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgres
+  namespace: orcaopta
+  labels:
+    app: postgres
 spec:
   serviceName: postgres
   replicas: 1
@@ -16,6 +19,7 @@ spec:
       containers:
         - name: postgres
           image: postgres:15
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
           env:
@@ -28,23 +32,47 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "mlflow"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "mlflow"]
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
   volumeClaimTemplates:
     - metadata:
         name: postgres-data
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 5Gi
-
+        # Optional: uncomment if using a specific storage class
+        # storageClassName: local-path
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
+  namespace: orcaopta
+  labels:
+    app: postgres
 spec:
   selector:
     app: postgres
   ports:
-    - port: 5432
+    - name: db
+      port: 5432
       targetPort: 5432
+  type: ClusterIP

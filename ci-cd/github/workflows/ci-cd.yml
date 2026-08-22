@@ -1,4 +1,4 @@
-name: Orcaopta Full CI
+name: Orcaopta CI
 
 on:
   push:

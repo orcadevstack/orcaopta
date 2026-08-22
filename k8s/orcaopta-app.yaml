@@ -1,52 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mlflow
+  name: orcaopta-app
   namespace: orcaopta
   labels:
-    app: mlflow
+    app: orcaopta-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mlflow
+      app: orcaopta-app
   template:
     metadata:
       labels:
-        app: mlflow
+        app: orcaopta-app
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
       containers:
-        - name: mlflow
-          image: ghcr.io/mlflow/mlflow:latest
+        - name: orcaopta-app
+          image: orcastack/orcaopta-app:latest
           imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
           ports:
-            - containerPort: 5000
-          args:
-            - mlflow
-            - server
-            - --backend-store-uri
-            - postgresql://mlflow:mlflowpass@postgres.orcaopta.svc.cluster.local:5432/mlflowdb
-            - --default-artifact-root
-            - s3://orcaopta-artifacts
-            - --host
-            - 0.0.0.0
+            - containerPort: 8000
           env:
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow.orcaopta.svc.cluster.local:5000"
             - name: MLFLOW_S3_ENDPOINT_URL
               value: "http://minio.orcaopta.svc.cluster.local:9000"
             - name: AWS_ACCESS_KEY_ID
               value: "admin"
             - name: AWS_SECRET_ACCESS_KEY
               value: "admin123"
+            - name: FERNET_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: orcaopta-fernet
+                  key: FERNET_KEYS
           readinessProbe:
             httpGet:
-              path: /
-              port: 5000
+              path: /health
+              port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /
-              port: 5000
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 20
           resources:
@@ -60,15 +61,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow
+  name: orcaopta-app
   namespace: orcaopta
-  labels:
-    app: mlflow
 spec:
   selector:
-    app: mlflow
+    app: orcaopta-app
   ports:
     - name: http
-      port: 5000
-      targetPort: 5000
-  type: ClusterIP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30080
+  type: NodePort

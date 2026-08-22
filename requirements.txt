@@ -1,12 +1,39 @@
+# Core API
 fastapi
 uvicorn[standard]
+python-multipart
+
+# ML + Data
 pandas
 scikit-learn
 joblib
-python-multipart
 shap
-notebook
 mlflow
+
+# Distributed compute
+pyspark
+
+# Observability
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-http
+
+# Scientific stack
+scipy
+seaborn
+xarray
+
+# Image processing
+opencv-python
+scikit-image
+
+# Graphs
+networkx
+
+# Domain libraries
+biopython
+rdkit-pypi
+astropy
+pywavelets
+python-control
+cryptography

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: train-db-pvc
+  namespace: orcaopta
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orcaopta-train
+  namespace: orcaopta
+  labels:
+    app: orcaopta-train
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orcaopta-train
+  template:
+    metadata:
+      labels:
+        app: orcaopta-train
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: orcaopta-train
+          image: orcastack/orcaopta-train:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "scripts/train_models.py"]
+          env:
+            - name: DB_HOST
+              value: "train-db.orcaopta.svc.cluster.local"
+            - name: DB_USER
+              value: "train"
+            - name: DB_PASS
+              value: "train123"
+            - name: DB_NAME
+              value: "traindb"
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow.orcaopta.svc.cluster.local:5000"
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: "http://minio.orcaopta.svc.cluster.local:9000"
+            - name: FERNET_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: orcaopta-fernet
+                  key: FERNET_KEYS
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: train-db
+  namespace: orcaopta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: train-db
+  template:
+    metadata:
+      labels:
+        app: train-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_USER
+              value: "train"
+            - name: POSTGRES_PASSWORD
+              value: "train123"
+            - name: POSTGRES_DB
+              value: "traindb"
+          volumeMounts:
+            - name: train-db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: train-db-storage
+          persistentVolumeClaim:
+            claimName: train-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: train-db
+  namespace: orcaopta
+spec:
+  selector:
+    app: train-db
+  ports:
+    - port: 5432
+      targetPort: 5432

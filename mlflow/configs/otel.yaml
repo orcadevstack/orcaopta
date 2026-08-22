@@ -1,0 +1,4 @@
+otel:
+  traces_endpoint: http://mlflow:5000/v1/traces
+  headers:
+    x-mlflow-experiment-id: "0"

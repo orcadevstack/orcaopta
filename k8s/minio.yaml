@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: minio
+  namespace: orcaopta
+  labels:
+    app: minio
 spec:
   serviceName: minio
   replicas: 1
@@ -15,7 +18,7 @@ spec:
     spec:
       containers:
         - name: minio
-          image: minio/minio
+          image: minio/minio:latest
           args:
             - server
             - /data
@@ -27,30 +30,59 @@ spec:
             - name: MINIO_ROOT_PASSWORD
               value: admin123
           ports:
-            - containerPort: 9000
-            - containerPort: 9001
+            - name: api
+              containerPort: 9000
+            - name: console
+              containerPort: 9001
           volumeMounts:
             - name: minio-data
               mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
   volumeClaimTemplates:
     - metadata:
         name: minio-data
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 5Gi
-
+        # Optional: uncomment if you have a specific storage class
+        # storageClassName: local-path
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: minio
+  namespace: orcaopta
+  labels:
+    app: minio
 spec:
   selector:
     app: minio
   ports:
-    - port: 9000
+    - name: api
+      port: 9000
       targetPort: 9000
-    - port: 9001
+    - name: console
+      port: 9001
       targetPort: 9001
+  type: ClusterIP

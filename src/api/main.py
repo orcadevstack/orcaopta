@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Request
 from src.utils.tracing import setup_tracing
 import pandas as pd
+import mlflow
+
 
 from src.ml import (
     model_utils,
@@ -13,13 +15,45 @@ from src.ml import (
 )
 
 
+
 tracer = setup_tracing()
 app = FastAPI()
+
+MODEL_NAME = "orcaopta-ml"
+MODEL_STAGE = "Production"
+
+model = None
 
 app = FastAPI(title="orcaopta ML API")
 
 class Payload(BaseModel):
     records: list[dict]
+
+def load_model():
+    global model
+    mlflow.set_tracking_uri("http://mlflow:5000")
+    model = mlflow.pyfunc.load_model(f"models:/{MODEL_NAME}/{MODEL_STAGE}")
+
+load_model()
+
+
+from src.core.security.encryption import encrypt, decrypt
+
+@app.post("/store-secret")
+def store_secret(payload: dict):
+    encrypted = encrypt(payload["value"].encode())
+    return {"token": encrypted.decode()}
+
+@app.post("/read-secret")
+def read_secret(payload: dict):
+    decrypted = decrypt(payload["token"].encode())
+    return {"value": decrypted.decode()}
+
+
+@app.get("/predict")
+def predict(x: float):
+    y = model.predict([[x]])[0]
+    return {"input": x, "output": float(y)}
 
 def to_df(payload: Payload):
     return pd.DataFrame(payload.records)

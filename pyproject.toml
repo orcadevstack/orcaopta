@@ -1,0 +1,38 @@
+[project]
+name = "orcaopta"
+version = "0.1.0"
+description = "Cloud-native ML, training, and API stack for Orcaopta"
+authors = [
+    { name = "Samuel Orcas", email = "orcaprojectstack@gmail.com" }
+]
+requires-python = ">=3.10"
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "pandas",
+    "scikit-learn",
+    "joblib",
+    "shap",
+    "mlflow",
+    "pyspark",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+    "scipy",
+    "seaborn",
+    "xarray",
+    "opencv-python",
+    "scikit-image",
+    "networkx",
+    "biopython",
+    "rdkit-pypi",
+    "astropy",
+    "pywavelets",
+    "python-control"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
