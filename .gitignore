@@ -1,0 +1,49 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Kubernetes
+.kube/
+*.kube/
+kubeconfig
+config
+/etc/kubernetes/
+/var/lib/kubelet/
+/var/lib/etcd/
+/var/lib/cni/
+/etc/cni/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env/
+.envrc
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# MLflow / MinIO
+mlruns/
+mlflow/
+minio-data/
+data/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
