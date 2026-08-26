@@ -1,4 +1,3 @@
-
 services:
   app:
     build:
@@ -19,8 +18,10 @@ services:
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_ALLOWED_HOSTS: "*"
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://mlflow:5000/v1/traces
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: x-mlflow-experiment-id=0
+      FERNET_KEYS: "qthk-LEH_AwQeemUe4b9zV8bizUZIj9vusKQ_33NMPg=,wL0p3jWxP8HApMM79VNMHR8z9xslAG-LPGqpKvtnvJk="
     restart: unless-stopped
 
   train:
@@ -43,10 +44,15 @@ services:
   jupyter:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: api
+      dockerfile: notebooks/Dockerfile
     container_name: orcaopta-jupyter
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root notebooks
+    command: >
+      jupyter-lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --notebook-dir=/app/notebooks
     ports:
       - "8888:8888"
     volumes:
@@ -70,6 +76,7 @@ services:
       - "5000:5000"
     environment:
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_ALLOWED_HOSTS: "*"
     command: >
       mlflow server
       --backend-store-uri postgresql://mlflow:mlflowpass@postgres:5432/mlflowdb

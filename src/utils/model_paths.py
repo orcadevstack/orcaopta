@@ -5,5 +5,4 @@ MODEL_PATHS = {
     "autoscale": "models/autoscale_model.pkl"
 }
 
-from src.utils import MODEL_PATHS
 path = MODEL_PATHS["forecast"]
