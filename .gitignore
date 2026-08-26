@@ -47,3 +47,4 @@ logs/
 .idea/
 *.swp
 *.swo
+.env
