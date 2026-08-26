@@ -37,3 +37,7 @@ astropy
 pywavelets
 python-control
 cryptography
+
+# 
+hoppr-cop
+ossaudit
