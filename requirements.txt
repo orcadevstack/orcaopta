@@ -2,6 +2,8 @@
 fastapi
 uvicorn[standard]
 python-multipart
+pydantic
+requests
 
 # ML + Data
 pandas
@@ -9,6 +11,10 @@ scikit-learn
 joblib
 shap
 mlflow
+
+# RL (if you use PPO)
+stable-baselines3
+gymnasium
 
 # Distributed compute
 pyspark
@@ -18,26 +24,26 @@ opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-http
 
-# Scientific stack
-scipy
-seaborn
-xarray
+# Cloud SDKs
+openstacksdk
+kubernetes
+python-hcl2
+ovs
+ceph
 
-# Image processing
-opencv-python
-scikit-image
+# Dashboard
+streamlit
+plotly
+pyvis
 
 # Graphs
 networkx
 
-# Domain libraries
-biopython
-rdkit-pypi
-astropy
-pywavelets
-python-control
+# Security
 cryptography
-
-# 
-hoppr-cop
 ossaudit
+
+# AI / LLM
+hoppr-cop
+langchain
+langchain-ollama

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orcaopta-app
+  namespace: orcaopta
+spec:
+  template:
+    spec:
+      containers:
+        - name: orcaopta-app
+          volumeMounts:
+            - name: ollama-socket
+              mountPath: /var/run/ollama
+          env:
+            - name: OLLAMA_HOST
+              value: "unix:///var/run/ollama/ollama.sock"
+      volumes:
+        - name: ollama-socket
+          hostPath:
+            path: /var/run/ollama
+            type: Socket

@@ -1,0 +1,211 @@
+name: Orcaopta CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+
+  full-pipeline:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: mlflow
+          POSTGRES_PASSWORD: mlflowpass
+          POSTGRES_DB: mlflowdb
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+      minio:
+        image: minio/minio
+        env:
+          MINIO_ROOT_USER: admin
+          MINIO_ROOT_PASSWORD: admin123
+        ports:
+          - 9000:9000
+        command: server /data
+
+      mlflow:
+        image: ghcr.io/mlflow/mlflow:latest
+        ports:
+          - 5000:5000
+        env:
+          MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+          AWS_ACCESS_KEY_ID: admin
+          AWS_SECRET_ACCESS_KEY: admin123
+        command: >
+          mlflow server
+          --backend-store-uri postgresql://mlflow:mlflowpass@postgres:5432/mlflowdb
+          --default-artifact-root s3://orcaopta-artifacts
+          --host 0.0.0.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create MinIO bucket
+        run: |
+          pip install minio
+          python - << 'EOF'
+          from minio import Minio
+          client = Minio("localhost:9000", access_key="admin", secret_key="admin123", secure=False)
+          if not client.bucket_exists("orcaopta-artifacts"):
+              client.make_bucket("orcaopta-artifacts")
+          EOF
+
+      - name: Lint code
+        run: |
+          pip install flake8
+          flake8 src
+
+      - name: Run unit tests
+        run: pytest -q
+
+      - name: Run ML training
+        env:
+          MLFLOW_S3_ENDPOINT_URL: http://localhost:9000
+          AWS_ACCESS_KEY_ID: admin
+          AWS_SECRET_ACCESS_KEY: admin123
+        run: python src/ml/train.py
+
+      - name: Run RL training
+        env:
+          MLFLOW_S3_ENDPOINT_URL: http://localhost:9000
+          AWS_ACCESS_KEY_ID: admin
+          AWS_SECRET_ACCESS_KEY: admin123
+        run: python src/rl/train_rl.py
+
+      - name: API health check
+        run: |
+          uvicorn src.api.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl -f http://localhost:8000/docs
+
+      - name: Build Docker image
+        run: docker build -t orcaopta:latest .
+
+      - name: Push Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker tag orcaopta:latest ${{ secrets.DOCKER_USERNAME }}/orcaopta:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/orcaopta:latest
+
+      - name: Hoppr-Cop Scan
+        run: hoppr-cop scan repo .
+
+      - name: OSSAudit
+        run: ossaudit scan .
+
+
+  cd-deploy:
+    needs: full-pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Load KUBECONFIG
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Verify cluster access
+        run: kubectl get nodes
+
+      - name: Deploy Orcaopta via Helm
+        run: |
+          helm upgrade --install orcaopta charts/orcaopta \
+            --namespace orcaopta \
+            --create-namespace \
+            --set image.repository=${{ secrets.DOCKER_USERNAME }}/orcaopta \
+            --set image.tag=latest
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/orcaopta-app -n orcaopta
+
+      - name: Post-deploy health check
+        run: |
+          kubectl get pods -n orcaopta
+          kubectl get svc -n orcaopta
+          curl -f http://orcaopta-app.orcaopta.svc.cluster.local:8000/docs
+
+      - name: Trigger self-healing controller
+        run: |
+          kubectl exec -n orcaopta deploy/orcaopta-app -- \
+            python -c "from src.orcaopta.controller.self_heal import self_heal_loop; print('Self-healing controller ready')"
+
+  ai-rollback:
+    needs: cd-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Load KUBECONFIG
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Collect cluster signals
+        run: |
+          kubectl get pods -n orcaopta -o wide > pods.txt
+          kubectl get events -n orcaopta --sort-by=.metadata.creationTimestamp > events.txt
+
+      - name: Run AI rollback decision
+        run: |
+          python - << 'EOF'
+          import subprocess
+          from src.orcaopta.ai.agent import ai_self_heal_plan
+
+          pods = open("pods.txt").read()
+          events = open("events.txt").read()
+
+          records = [{"pods": pods, "events": events}]
+          plan = ai_self_heal_plan(records)
+
+          print("=== AI ROLLBACK PLAN ===")
+          print(plan)
+          print("=== END AI ROLLBACK PLAN ===")
+
+          if "rollback" in plan.lower() or "undo deployment" in plan.lower():
+              print("AI suggests rollback. Executing rollback...")
+              subprocess.run(
+                  ["kubectl", "rollout", "undo", "deployment/orcaopta-app", "-n", "orcaopta"],
+                  check=False
+              )
+          else:
+              print("AI does NOT suggest rollback. Deployment stays active.")
+          EOF
