@@ -1,5 +1,13 @@
 # **ORCAOPTA — Autonomous Multi‑Cloud SRE & Healing Platform**
 
+    ██████╗   ██████╗   ██████╗    ██████╗    ██████╗   ███████╗  ████████╗   ██████╗ 
+██╔═══██╗ ██╔═══██╗ ██╔═══██╗  ██╔═══██╗  ██╔══██╗  ██╔════╝  ╚══██╔══╝  ██╔═══██╗
+██║   ██║ ██║   ██║ ██║   ██║  ██║   ██║  ██████╔╝  ███████╗     ██║     ██║   ██║
+██║   ██║ ██║   ██║ ██║   ██║  ██║   ██║  ██╔══██╗  ██╔═══██╗    ██║     ██║   ██║
+╚██████╔╝ ╚██████╔╝ ╚██████╔╝  ╚██████╔╝  ██║  ██║  ███████║    ██║     ╚██████╔╝
+ ╚═════╝   ╚═════╝   ╚═════╝    ╚═════╝   ╚═╝  ╚═╝  ╚══════╝    ╚═╝      ╚═════╝ 
+
+
 Orcaopta is an autonomous cloud‑SRE system designed to monitor, analyze, and heal complex multi‑cloud environments. It integrates infrastructure audits, machine learning, reinforcement learning, and AI‑driven reasoning to provide continuous reliability, security, and optimization across:
 
 - **OpenStack** (compute, networking, storage)  
