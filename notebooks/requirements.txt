@@ -10,7 +10,8 @@ requests
 ########################################
 # VISUALIZATION
 ########################################
-matplotlib
+
+matplotlib>=3.7
 seaborn
 plotly
 pyvis

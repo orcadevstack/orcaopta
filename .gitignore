@@ -48,3 +48,5 @@ logs/
 *.swp
 *.swo
 .env
+security/ssh/private/*
+security/gpg/private/*

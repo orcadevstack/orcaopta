@@ -21,7 +21,7 @@ This project is built for environments where reliability, automation, and intell
 ```
 orcaopta/
 │
-├── ci-cd/                     # CI/CD pipelines and automation
+├── .github/                     # CI/CD pipelines and automation
 ├── cloud/                     # Cloud-specific tools (legacy or external)
 ├── configs/                   # Configuration files
 ├── data/                      # Data storage

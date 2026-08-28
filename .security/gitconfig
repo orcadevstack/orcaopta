@@ -1,0 +1,11 @@
+[user]
+    signingkey = security/gpg/public/orcaopta.asc
+
+[gpg]
+    program = gpg
+
+[commit]
+    gpgsign = true
+
+[tag]
+    gpgsign = true
