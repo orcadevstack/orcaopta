@@ -3,6 +3,12 @@ import subprocess
 import json
 import re
 
+from src.orcaopta.core.config import load_config
+config = load_config()
+
+terraform_dir = config["terraform"]["working_dir"]
+plan_path = f"{terraform_dir}/{config['terraform']['plan_file']}"
+
 
 def run_cmd(cmd):
     try:
@@ -139,3 +145,4 @@ def execute_terraform_plan(plan: str):
 
     if "apply terraform" in plan.lower():
         print(run_cmd(["terraform", "apply", "-auto-approve"]))
+

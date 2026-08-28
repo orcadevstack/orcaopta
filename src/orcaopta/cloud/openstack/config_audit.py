@@ -1,5 +1,18 @@
 
 from openstack import connection
+from src.orcaopta.core.config import load_config
+config = load_config()
+ceph_conf = config["cloud"]["ceph"]["config_path"]
+openstack_auth = config["cloud"]["openstack"]
+
+conn = connection.Connection(
+    auth_url=openstack_auth["auth_url"],
+    username=openstack_auth["username"],
+    password=openstack_auth["password"],
+    project_name=openstack_auth["project"],
+    region_name=openstack_auth["region"]
+)
+
 
 def get_conn():
     return connection.Connection(
@@ -70,3 +83,4 @@ def audit_openstack_config():
         })
 
     return issues
+

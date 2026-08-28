@@ -11,8 +11,8 @@ scikit-learn
 joblib
 shap
 mlflow
+requests
 
-# RL (if you use PPO)
 stable-baselines3
 gymnasium
 
@@ -28,8 +28,6 @@ opentelemetry-exporter-otlp-proto-http
 openstacksdk
 kubernetes
 python-hcl2
-ovs
-ceph
 
 # Dashboard
 streamlit

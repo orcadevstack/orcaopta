@@ -1,8 +1,5 @@
-FROM python:3.10-slim AS base
+FROM python:3.12-slim-bookworm AS base
 
-# -----------------------------
-# System dependencies
-# -----------------------------
 RUN apt-get update && apt-get install -y \
     git \
     build-essential \
@@ -11,44 +8,39 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     cargo \
     pkg-config \
+    curl \
+    ceph-common \
+    openvswitch-switch \
     && rm -rf /var/lib/apt/lists/*
 
-# -----------------------------
-# Install Python dependencies
-# -----------------------------
-# Upgrade pip
 RUN pip install --upgrade pip
+RUN pip install cryptography 
 
-# Install cryptography properly
-RUN pip install cryptography --no-binary cryptography
+RUN pip install "kitaru[cli,mcp,worker]"
 
-# -----------------------------
-# Environment variables
-# -----------------------------
-ENV OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:5000/v1/traces
-ENV OTEL_EXPORTER_OTLP_TRACES_HEADERS="x-mlflow-experiment-id=0"
-
-# -----------------------------
-# Workspace
-# -----------------------------
 WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . /app
 
-# Install project dependencies
-RUN pip install -r requirements.txt
-
 ENV PYTHONPATH=/app
 
-# -----------------------------
-# Trainer Stage
-# -----------------------------
-FROM base AS trainer
-CMD ["bash", "-c", "python scripts/${TRAIN_SCRIPT}.py"]
+ENV OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:5000/v1/traces
+ENV OTEL_EXPORTER_OTLP_TRACES_HEADERS="x-mlflow-experiment-id=0"
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # -----------------------------
-# API Stage
+# API + MCP in one image
 # -----------------------------
 FROM base AS api
+
 EXPOSE 8000
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

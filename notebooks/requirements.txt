@@ -1,0 +1,32 @@
+########################################
+# CORE DATA SCIENCE
+########################################
+pandas
+numpy
+scikit-learn
+joblib
+requests
+
+########################################
+# VISUALIZATION
+########################################
+matplotlib
+seaborn
+plotly
+pyvis
+networkx
+
+########################################
+# JUPYTER STACK
+########################################
+jupyter
+notebook
+jupyterlab
+ipython
+ipykernel
+pyzmq
+
+########################################
+# MLOps
+########################################
+mlflow

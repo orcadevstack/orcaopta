@@ -1,0 +1,55 @@
+cloud:
+  openstack:
+    auth_url: "https://your-openstack:5000/v3"
+    username: "admin"
+    password: "secret"
+    project: "admin"
+    region: "RegionOne"
+
+  kubernetes:
+    kubeconfig: "/home/orca/.kube/config"
+
+  ceph:
+    cluster_name: "ceph"
+    config_path: "/etc/ceph/ceph.conf"
+
+terraform:
+  working_dir: "/home/orca/terraform"
+  plan_file: "plan.json"
+
+mlflow:
+  tracking_uri: "http://mlflow:5000"
+
+dashboard:
+  enabled: true
+  port: 8501
+
+self_heal:
+  interval_seconds: 60
+  enable_global_healing: true
+  enable_openstack_healing: true
+  enable_kubernetes_healing: true
+  enable_terraform_healing: true
+
+
+mode: standalone 
+
+standalone:
+  db: "sqlite:///orcaopta.db"
+  mlflow_backend: "sqlite:///mlflow.db"
+  mlflow_artifacts: "./mlruns"
+  artifacts_root: "./artifacts"
+  use_redis: false
+  use_minio: false
+  use_postgres: false
+
+cluster:
+  db: "postgresql://orca:orca@postgres:5432/orcaopta"
+  mlflow_backend: "postgresql://mlflow:mlflow@postgres:5432/mlflowdb"
+  mlflow_artifacts: "s3://orcaopta-artifacts"
+  redis_host: "redis"
+  redis_port: 6379
+  minio:
+    endpoint: "minio:9000"
+    access_key: "minio"
+    secret_key: "minio123"

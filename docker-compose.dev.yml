@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  orcaopta-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    container_name: orcaopta-dev
+    ports:
+      - "8000:8000"
+    environment:
+      ORCAOPTA_MODE: standalone
+      PYTHONUNBUFFERED: "1"
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+      DEBUG: "true"
+
+    volumes:
+      - .:/app                # Hot reload
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+
+    command: >
+      uvicorn src.api.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload

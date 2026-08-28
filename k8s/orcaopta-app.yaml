@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: orcaopta-app
+  name: orcaopta
   namespace: orcaopta
   labels:
-    app: orcaopta-app
+    app: orcaopta
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: orcaopta-app
+      app: orcaopta
   template:
     metadata:
       labels:
-        app: orcaopta-app
+        app: orcaopta
     spec:
       imagePullSecrets:
         - name: dockerhub-secret
       containers:
-        - name: orcaopta-app
-          image: orcastack/orcaopta-app:latest
+        - name: orcaopta
+          image: orcastack/orcaopta:latest
           imagePullPolicy: IfNotPresent
           command: ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
           ports:
@@ -61,11 +61,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: orcaopta-app
+  name: orcaopta
   namespace: orcaopta
 spec:
   selector:
-    app: orcaopta-app
+    app: orcaopta
   ports:
     - name: http
       port: 8000

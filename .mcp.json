@@ -1,0 +1,20 @@
+{
+  "workers": {
+    "orcaopta": {
+      "type": "python",
+      "entrypoint": "src.orcaopta.mcp:worker",
+      "env": {
+        "ORCAOPTA_MODE": "cluster",
+        "ORCAOPTA_CONFIG": "/app/configs/orcaopta.yaml"
+      },
+      "tools": [
+        "cloud_graph",
+        "openstack_audit",
+        "kubernetes_audit",
+        "terraform_audit",
+        "ml_signals",
+        "rl_signals"
+      ]
+    }
+  }
+}

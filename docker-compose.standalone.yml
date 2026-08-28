@@ -1,0 +1,45 @@
+services:
+  orcaopta:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orcaopta
+    ports:
+      - "8000:8000"
+    environment:
+      ORCAOPTA_MODE: standalone
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - .:/app
+    restart: unless-stopped
+    command: >
+      uvicorn src.api.main:app
+      --host 0.0.0.0
+      --port 8000
+
+  notebooks:
+    build:
+      context: .
+      dockerfile: notebooks/Dockerfile   # or notebooks/notebook.Dockerfile
+    container_name: orcaopta-notebooks
+    ports:
+      - "8888:8888"
+    environment:
+      ORCAOPTA_MODE: standalone
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+    volumes:
+      - .:/app
+      - ./mlruns:/app/mlruns
+    depends_on:
+      - orcaopta
+    restart: unless-stopped
+    command: >
+      jupyter notebook
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root

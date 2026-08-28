@@ -1,0 +1,58 @@
+FROM python:3.10-slim AS base
+
+
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    cargo \
+    pkg-config \
+    jq \
+    unzip \
+    vim \
+    ca-certificates \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+
+RUN pip install python-openstackclient
+
+RUN apt-get update && apt-get install -y \
+    ceph-common \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
+    && rm kubectl
+
+
+RUN wget https://releases.hashicorp.com/terraform/1.9.5/terraform_1.9.5_linux_amd64.zip \
+    && unzip terraform_1.9.5_linux_amd64.zip \
+    && mv terraform /usr/local/bin/ \
+    && rm terraform_1.9.5_linux_amd64.zip
+
+
+RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+
+RUN pip install --upgrade pip
+RUN pip install cryptography --no-binary cryptography
+
+WORKDIR /app
+COPY . /app
+
+RUN pip install -r requirements.txt
+
+ENV PYTHONPATH=/app
+
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]

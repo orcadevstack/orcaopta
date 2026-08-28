@@ -1,5 +1,10 @@
 
 from kubernetes import client, config
+from src.orcaopta.core.config import load_config
+config = load_config()
+
+kubeconfig = config["cloud"]["kubernetes"]["kubeconfig"]
+config.load_kube_config(kubeconfig)
 
 
 def load_kube_config():
@@ -179,3 +184,5 @@ def execute_kubernetes_plan(plan: str):
     if "create networkpolicy" in plan.lower() or "default deny" in plan.lower():
         for ns in core.list_namespace().items:
             print(create_default_network_policy(ns.metadata.name))
+
+config.load_kube_config(config["cloud"]["kubernetes"]["kubeconfig"])

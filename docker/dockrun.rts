@@ -1,0 +1,20 @@
+docker build -t orcaopta-standalone .
+docker run -p 8000:8000 \
+  -e ORCAOPTA_MODE=standalone \
+  -e ORCAOPTA_ROLE=api \
+  -v ./mlruns:/app/mlruns \
+  orcaopta-standalone
+
+
+docker run \
+  -e ORCAOPTA_MODE=standalone \
+  -e ORCAOPTA_ROLE=trainer \
+  -e TRAIN_SCRIPT=train_cpu \
+  orcaopta-standalone
+
+
+docker run -p 8000:8000 \
+  -e ORCAOPTA_MODE=cluster \
+  -e ORCAOPTA_ROLE=api \
+  -e MLFLOW_TRACKING_URI=http://mlflow:5000 \
+  orcaopta-standalone

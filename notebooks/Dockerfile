@@ -1,42 +1,41 @@
-FROM jupyter/base-notebook
+FROM python:3.11-slim-bookworm AS base
 
-# Switch to root to install system packages
+
+ARG GPU=false
+
 USER root
 
-# System dependencies you need for ML, cryptography, RL, etc.
 RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     libssl-dev \
     libffi-dev \
     python3-dev \
-    cargo \
-    pkg-config \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch back to notebook user
-USER ${NB_UID}
-
-# Workspace
 WORKDIR /app
 
-# Copy your project
 COPY . /app
 
-# Upgrade pip
 RUN pip install --upgrade pip
 
-# Install your project dependencies
-RUN pip install -r requirements.txt
+RUN pip install torch torchvision torchaudio
 
-# Install MLflow + OpenTelemetry
-RUN pip install mlflow \
-    opentelemetry-api \
-    opentelemetry-sdk \
-    opentelemetry-exporter-otlp-proto-http
 
-# Ensure notebooks directory exists
+COPY notebooks/requirements.txt /tmp/requirements-jupyter.txt
+
+RUN pip install --no-deps -r /tmp/requirements-jupyter.txt
+
+RUN pip install -r /tmp/requirements-jupyter.txt
+
 RUN mkdir -p /app/notebooks
 
 ENV PYTHONPATH=/app
 
+COPY docker/notebooks-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8888
+
+ENTRYPOINT ["/entrypoint.sh"]
