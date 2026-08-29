@@ -1,0 +1,34 @@
+
+services:
+  spark-master:
+    image: orcastack/spark:latest
+    container_name: spark-master
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.spark
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    networks:
+      - spark-net
+
+  spark-worker:
+    image: orcastack/spark:latest
+    container_name: spark-worker
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    networks:
+      - spark-net
+
+networks:
+  spark-net:
+    driver: bridge

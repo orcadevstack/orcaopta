@@ -266,3 +266,11 @@ def system_mode():
         "queue_backend": queue_backend,
         "storage_backend": storage_backend,
     }
+
+def start():
+    subprocess.run(["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"])
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "start":
+        start()

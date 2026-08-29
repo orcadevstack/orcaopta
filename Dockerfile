@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
-RUN pip install cryptography 
+#RUN pip install cryptography 
 
 RUN pip install "kitaru[cli,mcp,worker]"
 

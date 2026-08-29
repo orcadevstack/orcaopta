@@ -407,14 +407,3 @@ Contributions are welcome.
 
 MIT License.
 
----
-
-Samuel, this is **ready to paste** into your README or Release Description.  
-If you want, I can also generate:
-
-- A **short version**  
-- A **professional release notes version**  
-- A **marketing‑style landing page version**  
-- A **GitHub Pages documentation site**  
-
-Just tell me.

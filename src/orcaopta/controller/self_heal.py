@@ -6,6 +6,7 @@ from src.orcaopta.core.config import load_config
 from src.orcaopta.ai.agent import ai_self_heal_plan
 from src.orcaopta.core.events import add_event
 from src.orcaopta.cloud.graph import build_cloud_graph
+from typing import Dict, Any
 
 logger = logging.getLogger("orcaopta-heal")
 
@@ -361,3 +362,31 @@ def start_healing_loop(queue, interval_seconds: int = None):
     thread.start()
     logger.info("Healing loop thread started (auto-detect).")
     return thread
+
+
+# This is a placeholder for integration with your actual cloud APIs (K8s, OpenStack, Terraform, etc.)
+
+def execute_remediation(remediation_row: Dict[str, Any]):
+    """
+    Execute remediation based on remediation graph row.
+    """
+    action = remediation_row.get("action")
+    rtype = remediation_row.get("remediation_type")
+    target = remediation_row.get("remediation_target")
+
+    # Here we would call:
+    # - Kubernetes API (restart pod, scale deployment)
+    # - OpenStack API (restart service, rebalance)
+    # - Terraform (apply drift fix)
+    # - OVN/Ceph actions
+
+    print(f"[SELF-HEAL] action={action} type={rtype} target={target}")
+
+
+def run_self_healing(remediation_df):
+    """
+    Iterate over remediation graph and trigger actions.
+    """
+    rows = remediation_df.collect()
+    for row in rows:
+        execute_remediation(row.asDict())

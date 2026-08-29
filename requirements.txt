@@ -10,14 +10,11 @@ pandas
 scikit-learn
 joblib
 shap
-mlflow
+#mlflow
 requests
 
 stable-baselines3
 gymnasium
-
-# Distributed compute
-pyspark
 
 # Observability
 opentelemetry-api
@@ -43,5 +40,5 @@ ossaudit
 
 # AI / LLM
 hoppr-cop
-langchain
-langchain-ollama
+#langchain
+#langchain-ollama

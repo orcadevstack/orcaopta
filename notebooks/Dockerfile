@@ -20,7 +20,7 @@ COPY . /app
 
 RUN pip install --upgrade pip
 
-RUN pip install torch torchvision torchaudio
+#RUN pip install torch torchvision torchaudio
 
 
 COPY notebooks/requirements.txt /tmp/requirements-jupyter.txt

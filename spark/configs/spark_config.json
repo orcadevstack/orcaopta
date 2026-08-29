@@ -1,0 +1,12 @@
+{
+  "log_sources": {
+    "openstack": "s3a://orcaopta/logs/openstack/",
+    "kubernetes": "s3a://orcaopta/logs/kubernetes/",
+    "terraform": "s3a://orcaopta/logs/terraform/"
+  },
+  "metrics_path": "s3a://orcaopta/metrics/telemetry/",
+  "drift_baseline": {
+    "cpu": 40,
+    "memory": 60
+  }
+}
