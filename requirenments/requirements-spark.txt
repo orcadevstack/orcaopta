@@ -1,4 +1,4 @@
-pyspark==3.5.1
+pyspark==3.5.2
 minio
 pyyaml
 py4j
