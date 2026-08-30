@@ -1,0 +1,2 @@
+[console_scripts]
+orcaopta = orcaopta.cli.orcaopta_cli:app

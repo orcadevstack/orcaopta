@@ -1,4 +1,5 @@
 import requests
+import json
 import logging
 from typing import Optional, Dict, Any, Generator, Callable
 
@@ -6,15 +7,28 @@ logger = logging.getLogger("orcaopta.llm")
 
 
 class OrcaLLM:
+    """
+    Unified LLM engine for Orcaopta.
+    Supports:
+    - Ollama generate
+    - Streaming
+    - Tool calling
+    - Routing
+    """
+
     def __init__(
         self,
         default_model: str = "qwen2.5",
-        endpoint: str = "http://localhost:11434/api/generate",
-        timeout: int = 30,
+        endpoint: str = "http://127.0.0.1:11434/api/generate",
+        timeout: int = 60,
     ):
         self.default_model = default_model
         self.endpoint = endpoint
         self.timeout = timeout
+
+    # ============================================================
+    # BASIC CALL
+    # ============================================================
 
     def run(
         self,
@@ -43,9 +57,12 @@ class OrcaLLM:
             data = res.json()
             return data.get("response", "").strip()
         except Exception as e:
-            logger.error(f"LLM error: {e}")
+            logger.error(f"[LLM] Error: {e}")
             return f"[LLM Error: {e}]"
 
+    # ============================================================
+    # STREAMING
+    # ============================================================
 
     def stream(
         self,
@@ -82,8 +99,12 @@ class OrcaLLM:
                     except Exception:
                         continue
         except Exception as e:
-            logger.error(f"Streaming LLM error: {e}")
+            logger.error(f"[LLM] Stream error: {e}")
             yield f"[LLM Stream Error: {e}]"
+
+    # ============================================================
+    # TOOL CALLING
+    # ============================================================
 
     def run_with_tools(
         self,
@@ -92,14 +113,6 @@ class OrcaLLM:
         model: Optional[str] = None,
         system: Optional[str] = None,
     ) -> Dict[str, Any]:
-
-        """
-        LLM returns a JSON command like:
-        {
-            "tool": "terraform_audit",
-            "args": {}
-        }
-        """
 
         response = self.run(prompt, model=model, system=system)
 
@@ -120,6 +133,10 @@ class OrcaLLM:
         except Exception as e:
             return {"error": f"Tool execution failed: {e}", "tool": tool_name}
 
+    # ============================================================
+    # ROUTING
+    # ============================================================
+
     def route(
         self,
         task: str,
@@ -127,20 +144,32 @@ class OrcaLLM:
         system: Optional[str] = None,
     ) -> str:
 
-        """
-        Example routing:
-        - security tasks → "llama3-sec"
-        - cloud tasks → "qwen2.5-cloud"
-        - RL tasks → "orca-rl"
-        """
+        task = task.lower()
 
-        if "security" in task.lower():
+        if "security" in task:
             model = "llama3-sec"
-        elif "cloud" in task.lower():
+        elif "cloud" in task:
             model = "qwen2.5-cloud"
-        elif "rl" in task.lower():
+        elif "rl" in task:
             model = "orca-rl"
         else:
             model = self.default_model
 
         return self.run(prompt, model=model, system=system)
+
+
+# ============================================================
+# SIMPLE WRAPPERS (Optional)
+# ============================================================
+
+llm = OrcaLLM()
+
+def generate(prompt: str, model: str = "qwen2.5"):
+    return llm.run(prompt, model=model)
+
+def stream(prompt: str, model: str = "qwen2.5"):
+    return llm.stream(prompt, model=model)
+
+def route(task: str, prompt: str):
+    return llm.route(task, prompt)
+

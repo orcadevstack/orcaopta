@@ -9,7 +9,7 @@ setup(
     license="MIT",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    python_requires=">=3.14",
+    python_requires=">=3.13.5",
 
     install_requires=[
         "fastapi",

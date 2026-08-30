@@ -1,0 +1,12 @@
+Package: orcaopta
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Samuel Orcas <orcaprojectstack@gmail.com>
+Homepage: https://github.com/orcaopta/orcaopta
+Description: Orcaopta Control Plane CLI
+ A unified cloud automation CLI for MCP, ML, RL, observability,
+ autoscaling, node operations, Spark pipelines, blockchain logging,
+ and cluster graph visualization. Provides operator-grade commands
+ for managing Orcaopta deployments across distributed systems.

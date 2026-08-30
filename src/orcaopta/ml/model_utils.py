@@ -3,6 +3,14 @@ import joblib
 import logging
 from pathlib import Path
 
+import psutil
+import pandas as pd
+
+try:
+    import torch
+except Exception:
+    torch = None
+
 from src.orcaopta.ml.config import (
     MODEL_DIR,
     CORE_MODEL_PATH,
@@ -15,6 +23,9 @@ from src.orcaopta.ml.config import (
 logger = logging.getLogger("orcaopta.model-utils")
 
 
+# ============================================================
+# FALLBACK MODEL
+# ============================================================
 
 def load_fallback_model():
     """
@@ -26,16 +37,13 @@ def load_fallback_model():
     return LinearRegression()
 
 
+# ============================================================
+# VERSIONED MODEL LOADING
+# ============================================================
+
 def load_versioned_model(model_family: dict, version: str | None = None):
     """
     Load a versioned model from a model family.
-
-    Example:
-        load_versioned_model(ANOMALY_MODELS, "v2")
-
-    If version is None:
-        - load the highest available version
-        - or fallback if none exist
     """
 
     # Explicit version requested
@@ -58,7 +66,6 @@ def load_versioned_model(model_family: dict, version: str | None = None):
         logger.error("Model family is empty. No versions available.")
         return load_fallback_model()
 
-    # Sort versions numerically: v1 < v2 < v3
     sorted_versions = sorted(model_family.keys(), key=lambda v: int(v.replace("v", "")))
     latest_version = sorted_versions[-1]
     latest_path = model_family[latest_version]
@@ -71,6 +78,10 @@ def load_versioned_model(model_family: dict, version: str | None = None):
 
     return joblib.load(latest_path)
 
+
+# ============================================================
+# CORE MODEL
+# ============================================================
 
 def load_core_model():
     """
@@ -88,6 +99,10 @@ def load_core_model():
     return model
 
 
+# ============================================================
+# MODEL FAMILY WRAPPERS
+# ============================================================
+
 def load_anomaly(version: str | None = None):
     return load_versioned_model(ANOMALY_MODELS, version)
 
@@ -101,23 +116,64 @@ def load_autoscale(version: str | None = None):
     return load_versioned_model(AUTOSCALE_MODELS, version)
 
 
+# ============================================================
+# MODEL DEPLOYMENT
+# ============================================================
 
 def deploy_versioned_model(model_file: bytes, family: str, version: str):
     """
     Deploy a new versioned model.
-
-    Example:
-        deploy_versioned_model(file_bytes, "anomaly", "v3")
     """
     filename = f"{family}_{version}.pkl"
     path = MODEL_DIR / filename
 
-    # Ensure directory exists
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Write model file
     with open(path, "wb") as f:
         f.write(model_file)
 
     logger.info(f"Model deployed: {path}")
     return path
+
+
+# ============================================================
+# CLUSTER METRICS (REQUIRED BY SUPERVISOR + ML STACK)
+# ============================================================
+
+def sample_cluster_metrics():
+    """
+    Collect real-time cluster metrics and return a Pandas DataFrame.
+
+    This is REQUIRED for:
+    - anomaly_detection.predict_anomaly()
+    - forecasting.predict_future()
+    - resource_optimization.optimize_resources()
+    - autoscaling.autoscale_decision()
+    - Supervisor autoscale loop
+    - MCP tool: ml_signals
+    """
+
+    cpu = psutil.cpu_percent()
+    mem = psutil.virtual_memory().percent
+
+    # GPU metrics (if available)
+    if torch and torch.cuda.is_available():
+        try:
+            gpu_util = torch.cuda.utilization(0) if hasattr(torch.cuda, "utilization") else 0
+            gpu_mem = torch.cuda.memory_allocated()
+        except Exception:
+            gpu_util = 0
+            gpu_mem = 0
+    else:
+        gpu_util = 0
+        gpu_mem = 0
+
+    df = pd.DataFrame([{
+        "cpu_percent": cpu,
+        "memory_percent": mem,
+        "gpu_utilization": gpu_util,
+        "gpu_memory": gpu_mem,
+    }])
+
+    logger.info(f"[ModelUtils] Sampled cluster metrics: {df.to_dict(orient='records')[0]}")
+    return df

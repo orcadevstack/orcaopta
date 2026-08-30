@@ -1,40 +1,28 @@
-
 import logging
 import json
 import shutil
 import subprocess
-import pandas as pd
 import torch
 
+from orcaopta.utils.device import DEVICE
 from orcaopta.supervisor.supervisor import start_supervisor
-
-sup = start_supervisor(interval=10)
-
 from orcaopta.cloud.detect.cloud_graph_engine import get_cached_cloud_graph
 
-# Optional OpenStack
+# Optional subsystems
 try:
     from orcaopta.cloud.openstack.network_audit import audit_network as os_network_audit
 except Exception:
     os_network_audit = None
 
-# Optional Kubernetes
 try:
     from orcaopta.cloud.kubernetes.config_audit import audit_kubernetes_config
 except Exception:
     audit_kubernetes_config = None
 
-# Optional Terraform
 try:
     from orcaopta.cloud.terraform.plan_audit import audit_terraform_plan
 except Exception:
     audit_terraform_plan = None
-
-# Supervisor
-from orcaopta.supervisor.supervisor import start_supervisor
-
-# Device
-from orcaopta.utils.device import device
 
 # Spark tools
 try:
@@ -46,26 +34,39 @@ try:
 except Exception:
     tool_spark_run_job = tool_spark_pipeline = tool_spark_ingest = None
 
-# P2P tools
+# Node tools
 try:
     from orcaopta.mcp.tools_node import (
         tool_node_announce,
         tool_node_list_peers,
         tool_node_vote_autoscale,
+        tool_node_health,
+        tool_node_metrics,
+        tool_node_metrics_prometheus,
+        tool_node_config,
+        tool_node_restart,
+        tool_node_logs_tail,
+        tool_node_storage,
     )
 except Exception:
-    tool_node_announce = tool_node_list_peers = tool_node_vote_autoscale = None
+    tool_node_announce = None
 
 # Blockchain tools
 try:
     from orcaopta.mcp.tools_blockchain import (
         tool_blockchain_log,
         tool_blockchain_verify,
+        tool_blockchain_health,
+        tool_blockchain_peers,
+        tool_blockchain_consensus,
+        tool_blockchain_contract_call,
+        tool_blockchain_model_register,
+        tool_blockchain_autoscale_vote,
     )
 except Exception:
-    tool_blockchain_log = tool_blockchain_verify = None
+    tool_blockchain_log = None
 
-# Optional ML stack
+# ML / RL
 try:
     from orcaopta.ml import (
         anomaly_detection,
@@ -77,12 +78,10 @@ try:
 except Exception:
     anomaly_detection = forecasting = resource_optimization = autoscaling = model_utils = None
 
-# Optional RL stack
 try:
     from orcaopta.rl import evaluate_rl, agent_ppo
 except Exception:
     evaluate_rl = agent_ppo = None
-
 
 logger = logging.getLogger("orcaopta.mcp.tools")
 
@@ -120,18 +119,10 @@ def tool_ml_signals():
     df = model_utils.sample_cluster_metrics()
 
     return {
-        "anomaly": anomaly_detection.predict_anomaly(
-            model_utils.load_anomaly(), df
-        ).tolist(),
-        "forecast": forecasting.predict_future(
-            model_utils.load_forecast(), df
-        ).tolist(),
-        "resource_opt": resource_optimization.optimize_resources(
-            model_utils.load_resource_opt(), df
-        ).tolist(),
-        "autoscale": autoscaling.autoscale_decision(
-            model_utils.load_autoscale(), df
-        ).tolist(),
+        "anomaly": anomaly_detection.predict_anomaly(model_utils.load_anomaly(), df).tolist(),
+        "forecast": forecasting.predict_future(model_utils.load_forecast(), df).tolist(),
+        "resource_opt": resource_optimization.optimize_resources(model_utils.load_resource_opt(), df).tolist(),
+        "autoscale": autoscaling.autoscale_decision(model_utils.load_autoscale(), df).tolist(),
     }
 
 
@@ -149,7 +140,7 @@ def tool_start_supervisor():
 
 
 def tool_gpu_profiler():
-    if device == "cuda":
+    if DEVICE == "cuda":
         try:
             props = torch.cuda.get_device_properties(0)
             return {
@@ -198,7 +189,7 @@ def register_tools(mcp):
     Register all MCP tools into your custom MCPServer instance.
     """
 
-    # Core cloud tools
+    # Cloud
     mcp.register("cloud_graph", tool_cloud_graph, "Return cached cloud graph")
 
     if os_network_audit:
@@ -222,25 +213,34 @@ def register_tools(mcp):
     mcp.register("ceph_health", tool_ceph_health, "Ceph cluster health")
     mcp.register("k8s_node_stats", tool_k8s_node_stats, "Kubernetes node stats")
 
-    # Spark tools
+    # Spark
     if tool_spark_run_job:
         mcp.register("spark_run_job", tool_spark_run_job, "Run Spark job")
         mcp.register("spark_pipeline", tool_spark_pipeline, "Run Spark pipeline")
         mcp.register("spark_ingest", tool_spark_ingest, "Run Spark ingestion")
 
-    # P2P tools
+    # Node
     if tool_node_announce:
-        mcp.register("node_announce", tool_node_announce)
-        mcp.register("node_list_peers", tool_node_list_peers)
-        mcp.register("node_vote_autoscale", tool_node_vote_autoscale)
+        mcp.register("node_announce", tool_node_announce, "Announce node")
+        mcp.register("node_list_peers", tool_node_list_peers, "List peers")
+        mcp.register("node_vote_autoscale", tool_node_vote_autoscale, "Vote autoscale")
+        mcp.register("node_health", tool_node_health, "Node health")
+        mcp.register("node_metrics", tool_node_metrics, "Node metrics")
+        mcp.register("node_metrics_prometheus", tool_node_metrics_prometheus, "Prometheus metrics")
+        mcp.register("node_config", tool_node_config, "Node config")
+        mcp.register("node_restart", tool_node_restart, "Restart supervisor")
+        mcp.register("node_logs_tail", tool_node_logs_tail, "Tail logs")
+        mcp.register("node_storage", tool_node_storage, "Node storage")
 
-    # Blockchain tools
+    # Blockchain
     if tool_blockchain_log:
-        mcp.register("blockchain_log", tool_blockchain_log)
-        mcp.register("blockchain_verify", tool_blockchain_verify)
+        mcp.register("blockchain_log", tool_blockchain_log, "Write blockchain log")
+        mcp.register("blockchain_verify", tool_blockchain_verify, "Verify blockchain entry")
+        mcp.register("blockchain_health", tool_blockchain_health, "Blockchain health")
+        mcp.register("blockchain_peers", tool_blockchain_peers, "Blockchain peers")
+        mcp.register("blockchain_consensus", tool_blockchain_consensus, "Consensus status")
+        mcp.register("blockchain_contract_call", tool_blockchain_contract_call, "Smart contract call")
+        mcp.register("blockchain_model_register", tool_blockchain_model_register, "Register ML model")
+        mcp.register("blockchain_autoscale_vote", tool_blockchain_autoscale_vote, "Autoscale vote")
 
     logger.info("All MCP tools registered successfully.")
-
-
-def tool_llm_run(prompt: str):
-    return {"response": mcp.llm.run(prompt)}

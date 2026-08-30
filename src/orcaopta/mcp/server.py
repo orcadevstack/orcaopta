@@ -1,22 +1,14 @@
 import logging
-import subprocess
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-# Correct device import
 from orcaopta.utils.device import DEVICE
-
-# Supervisor integration
 from orcaopta.supervisor.supervisor import start_supervisor
-
-# Load MCP config + mode
 from orcaopta.mcp.config import get_mode, load_mcp_config
 
-# MCP tool registry
 from orcaopta.mcp.tool import register_tools
-from orcaopta.mcp.tools_node import *
-from orcaopta.mcp.tools_blockchain import *
-from orcaopta.mcp.tools_spark import *
+from orcaopta.ai.llm import llm
 
 logger = logging.getLogger("orcaopta.mcp")
 
@@ -35,10 +27,7 @@ class MCPServer:
         self.tools = {}
 
     def register(self, name: str, func, description: str = ""):
-        self.tools[name] = {
-            "func": func,
-            "description": description,
-        }
+        self.tools[name] = {"func": func, "description": description}
         logger.info(f"[MCP] Tool registered: {name} - {description}")
 
     def list_tools(self):
@@ -68,21 +57,19 @@ class MCPServer:
 
 
 # ============================================================
-# Banner
+# ASCII Banner
 # ============================================================
 
-def print_banner():
-    banner = r"""
-  ____   ____   ____    ___    ____   ____   _______ 
+BANNER = r"""
+  ____   ____   ____    ___    ____   ____   _______
   / __ \ / __ \ / __ \  / _ \  / __ \ / __ \ |__   __|
- | |  | | |  | | |  | |/ /_\ \| |  | | |  | |   | |   
- | |  | | |  | | |  | ||  _  || |  | | |  | |   | |   
- | |__| | |__| | |__| || | | || |__| | |__| |   | |   
-  \___\_\\____/ \____/ |_| |_|\____/ \____/    |_|   
+ | |  | | |  | | |  | |/ /_\ \| |  | | |  | |   | |
+ | |  | | |  | | |  | ||  _  || |  | | |  | |   | |
+ | |__| | |__| | |__| || | | || |__| | |__| |   | |
+  \___\_\\____/ \____/ |_| |_|\____/ \____/    |_|
 
-    Orcaopta Control Plane - Enterprise MCP Server
-    """
-    print(banner)
+        Orcaopta Control Plane — Enterprise MCP Server
+"""
 
 
 # ============================================================
@@ -90,9 +77,6 @@ def print_banner():
 # ============================================================
 
 def create_app():
-    print_banner()
-
-    # Load enterprise MCP config
     mcp_cfg = load_mcp_config()
     mode = get_mode()
 
@@ -112,24 +96,91 @@ def create_app():
     # Register all MCP tools
     register_tools(mcp)
 
-    # Include P2P router AFTER app is created
-    from orcaopta.p2p.router import router as p2p_router
-    app.include_router(p2p_router)
+    # ============================================================
+    # LLM Tools
+    # ============================================================
 
-    # MCP endpoint
-    @app.post("/v1/mcp")
-    async def mcp_endpoint(request: MCPRequest):
-        return mcp.handle(request)
+    def tool_llm(prompt: str, model: str = None):
+        return {"response": llm.run(prompt, model=model)}
 
-    # Health endpoint
+    def tool_llm_stream(prompt: str, model: str = None):
+        output = ""
+        for token in llm.stream(prompt, model=model):
+            output += token
+        return {"response": output}
+
+    def tool_llm_route(task: str, prompt: str):
+        return {"response": llm.route(task, prompt)}
+
+    def tool_llm_tools(prompt: str):
+        return llm.run_with_tools(prompt, mcp.tools)
+
+    mcp.register("llm", tool_llm, "LLM text generation")
+    mcp.register("llm_stream", tool_llm_stream, "LLM streaming output")
+    mcp.register("llm_route", tool_llm_route, "LLM routing engine")
+    mcp.register("llm_tools", tool_llm_tools, "LLM tool-calling JSON interface")
+
+    # ============================================================
+    # Homepage (like Ollama)
+    # ============================================================
+
+    @app.get("/", response_class=HTMLResponse)
+    def home():
+        return f"""
+        <html>
+        <body style="font-family: monospace; background: #111; color: #0f0;">
+        <pre>{BANNER}</pre>
+        <h3>Status: Running</h3>
+        <p>Mode: {mode}</p>
+        <p>Device: {DEVICE.upper()}</p>
+        <p>Tools Registered: {len(mcp.tools)}</p>
+        </body>
+        </html>
+        """
+
+    # ============================================================
+    # Info Endpoint
+    # ============================================================
+
+    @app.get("/v1/info")
+    def info():
+        return {
+            "service": "Orcaopta Control Plane",
+            "version": "1.0.0",
+            "mode": mode,
+            "device": DEVICE,
+            "tools": list(mcp.tools.keys()),
+        }
+
+    # ============================================================
+    # Health Endpoint
+    # ============================================================
+
     @app.get("/v1/health")
-    async def health():
+    def health():
         return {
             "status": "ok",
             "service": "orcaopta-mcp",
             "mode": mode,
             "device": DEVICE,
         }
+
+    # ============================================================
+    # MCP Endpoint
+    # ============================================================
+
+    @app.post("/v1/mcp")
+    async def mcp_endpoint(request: MCPRequest):
+        return mcp.handle(request)
+
+    # ============================================================
+    # Supervisor Startup (FastAPI lifespan-safe)
+    # ============================================================
+
+    @app.on_event("startup")
+    async def startup_event():
+        logger.info("[MCP] Starting Supervisor...")
+        start_supervisor(interval=10)
 
     return app
 
@@ -144,17 +195,9 @@ def main():
     logger.info("[MCP] Starting Orcaopta MCP Server...")
     logger.info(f"[MCP] Device selected: {DEVICE.upper()}")
 
-    # Start supervisor (autoscale + metrics)
-    start_supervisor(interval=10)
-
     app = create_app()
 
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_level="info",
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
 
 
 if __name__ == "__main__":

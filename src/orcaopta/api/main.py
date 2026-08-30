@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from orcaopta.bootstrap.handshake import handshake
 from orcaopta.bootstrap.wizard import wizard
+from orcaopta.ai.llm import llm
 from orcaopta.core.security.attack_mapping import analyze_cloud_graph
 from orcaopta.tracking.client import OrcaoptaTracker
 from orcaopta.tracing.setup import setup_tracing
@@ -331,6 +332,54 @@ def supervisor_metrics_prometheus():
     if not sup:
         return Response("# orcaopta supervisor not running\n", media_type="text/plain")
     return Response(sup.get_metrics_prometheus(), media_type="text/plain")
+
+
+@v1.post("/ai/anomaly-explain-llm", tags=["AI Explanations"])
+def ai_anomaly_explain_llm(payload: Payload):
+    prompt = f"Explain these anomaly detection results:\n{payload.records}"
+    explanation = llm.run(prompt)
+    return {"explanation": explanation}
+
+@v1.post("/ai/forecast-explain-llm", tags=["AI Explanations"])
+def ai_forecast_explain_llm(payload: Payload):
+    prompt = f"Explain this forecast output:\n{payload.records}"
+    explanation = llm.run(prompt)
+    return {"explanation": explanation}
+
+@v1.post("/ai/autoscale-explain-llm", tags=["AI Explanations"])
+def ai_autoscale_explain_llm(payload: Payload):
+    prompt = f"Explain this autoscale decision context:\n{payload.records}"
+    explanation = llm.run(prompt)
+    return {"explanation": explanation}
+
+@v1.get("/ai/cloud-explain-llm", tags=["AI Explanations"])
+def ai_cloud_explain_llm():
+    graph = build_cloud_graph()
+    prompt = f"Analyze this cloud graph and describe risks:\n{graph}"
+    explanation = llm.run(prompt)
+    return {"cloud_graph": graph, "explanation": explanation}
+
+@v1.post("/ai/self-heal-plan-llm", tags=["AI Explanations"])
+def ai_self_heal_llm(payload: Payload):
+    plan = ai_self_heal_plan(payload.records)
+    prompt = f"Explain this self-healing plan:\n{plan}"
+    explanation = llm.run(prompt)
+    return {"self_heal_plan": plan, "explanation": explanation}
+
+@v1.post("/ai/llm-stream", tags=["AI Explanations"])
+def ai_llm_stream(payload: dict):
+    prompt = payload.get("prompt", "")
+    output = ""
+    for token in llm.stream(prompt):
+        output += token
+    return {"response": output}
+
+@v1.post("/ai/llm-route", tags=["AI Explanations"])
+def ai_llm_route(payload: dict):
+    task = payload.get("task", "general")
+    prompt = payload.get("prompt", "")
+    response = llm.route(task, prompt)
+    return {"task": task, "response": response}
 
 
 # Attach versioned router
