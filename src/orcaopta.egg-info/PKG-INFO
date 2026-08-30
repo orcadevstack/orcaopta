@@ -1,17 +1,17 @@
 Metadata-Version: 2.4
 Name: orcaopta
 Version: 0.1.0
-Summary: Cloud-native SRE automation framework with ML, RL, observability, and intelligent remediation.
+Summary: Cloud-native SRE automation framework with MCP, observability, operator tooling, and intelligent remediation.
 Author: Samuel
 Author-email: Samuel Orcas <orcaprojectstack@gmail.com>
 License: MIT
-Keywords: sre,ml,rl,observability,cloud,automation,openstack,kubernetes,telemetry,autoscaling
+Keywords: sre,mcp,observability,cloud,automation,openstack,kubernetes,telemetry,autoscaling
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: POSIX :: Linux
 Classifier: Framework :: FastAPI
 Classifier: Topic :: System :: Monitoring
-Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: System :: Distributed Computing
 Requires-Python: >=3.13.5
 Description-Content-Type: text/markdown
 License-File: LICENSE
@@ -20,24 +20,26 @@ Requires-Dist: uvicorn[standard]
 Requires-Dist: python-multipart
 Requires-Dist: pydantic
 Requires-Dist: requests
-Requires-Dist: pandas
-Requires-Dist: numpy
-Requires-Dist: scikit-learn
-Requires-Dist: joblib
-Requires-Dist: stable-baselines3
-Requires-Dist: gymnasium
 Requires-Dist: SQLAlchemy
 Requires-Dist: opentelemetry-api
 Requires-Dist: opentelemetry-sdk
 Requires-Dist: opentelemetry-exporter-otlp-proto-http
 Requires-Dist: cryptography
 Requires-Dist: ossaudit
-Requires-Dist: hoppr-cop
 Requires-Dist: rich
+Requires-Dist: click
 Requires-Dist: python-dotenv
 Requires-Dist: typer
 Requires-Dist: orjson
 Requires-Dist: pyyaml
+Requires-Dist: attackcti
+Requires-Dist: stix2
+Requires-Dist: taxii2-client
+Requires-Dist: web3
+Provides-Extra: cloud
+Requires-Dist: openstacksdk; extra == "cloud"
+Requires-Dist: kubernetes; extra == "cloud"
+Requires-Dist: python-hcl2; extra == "cloud"
 Provides-Extra: dashboard
 Requires-Dist: matplotlib>=3.11; extra == "dashboard"
 Requires-Dist: seaborn; extra == "dashboard"
@@ -45,37 +47,8 @@ Requires-Dist: plotly; extra == "dashboard"
 Requires-Dist: pyvis; extra == "dashboard"
 Requires-Dist: networkx; extra == "dashboard"
 Requires-Dist: streamlit; extra == "dashboard"
-Provides-Extra: cloud
-Requires-Dist: openstacksdk; extra == "cloud"
-Requires-Dist: kubernetes; extra == "cloud"
-Requires-Dist: python-hcl2; extra == "cloud"
-Provides-Extra: spark
-Requires-Dist: pyspark; extra == "spark"
-Requires-Dist: py4j; extra == "spark"
-Requires-Dist: kafka-python; extra == "spark"
 Provides-Extra: explain
 Requires-Dist: shap; extra == "explain"
-Provides-Extra: mlflow-legacy
-Requires-Dist: mlflow; extra == "mlflow-legacy"
-Requires-Dist: protobuf; extra == "mlflow-legacy"
-Requires-Dist: sqlalchemy; extra == "mlflow-legacy"
-Requires-Dist: alembic; extra == "mlflow-legacy"
-Provides-Extra: notebooks
-Requires-Dist: jupyter; extra == "notebooks"
-Requires-Dist: notebook; extra == "notebooks"
-Requires-Dist: jupyterlab; extra == "notebooks"
-Requires-Dist: ipython; extra == "notebooks"
-Requires-Dist: ipykernel; extra == "notebooks"
-Requires-Dist: pyzmq; extra == "notebooks"
-Requires-Dist: pandas; extra == "notebooks"
-Requires-Dist: numpy; extra == "notebooks"
-Requires-Dist: matplotlib; extra == "notebooks"
-Requires-Dist: seaborn; extra == "notebooks"
-Requires-Dist: plotly; extra == "notebooks"
-Requires-Dist: networkx; extra == "notebooks"
-Requires-Dist: pyvis; extra == "notebooks"
-Requires-Dist: scikit-learn; extra == "notebooks"
-Requires-Dist: joblib; extra == "notebooks"
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: black; extra == "dev"

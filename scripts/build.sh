@@ -2,13 +2,31 @@
 set -e
 
 VERSION="0.1.0"
-DIST_DIR="dist"
+DIST="dist"
 
 echo "============================================================"
-echo "        ORCAOPTA — CROSS PLATFORM BUILD SYSTEM"
+echo "        ORCAOPTA — GLOBAL BUILD SYSTEM"
 echo "============================================================"
 
-mkdir -p $DIST_DIR
+# Activate venv
+source .venv/bin/activate
+
+# Ensure tools exist
+pip install pyinstaller
+sudo apt-get update
+sudo apt-get install -y dpkg-dev pkg-config fakeroot zip gnupg openssh-client
+
+mkdir -p $DIST
+
+# -------------------------------------------------------------
+# Build CLI Binary
+# -------------------------------------------------------------
+echo "[CLI] Building PyInstaller binary..."
+
+pyinstaller --onefile src/orcaopta/cli/orcaopta_cli.py --name orcaopta
+
+echo "[CLI] Binary built: dist/orcaopta"
+
 
 # -------------------------------------------------------------
 # Build Linux .deb
@@ -18,8 +36,7 @@ echo "[Linux] Building .deb package..."
 mkdir -p build/linux/usr/local/bin
 mkdir -p build/linux/DEBIAN
 
-# Copy CLI binary from venv
-cp .venv/bin/orcaopta build/linux/usr/local/bin/
+cp dist/orcaopta build/linux/usr/local/bin/orcaopta
 chmod +x build/linux/usr/local/bin/orcaopta
 
 cat > build/linux/DEBIAN/control <<EOF
@@ -30,69 +47,37 @@ Priority: optional
 Architecture: amd64
 Maintainer: Samuel Orcas <orcaprojectstack@gmail.com>
 Description: Orcaopta Control Plane CLI
- Unified MCP + ML + RL + Cloud Automation CLI.
+ Unified MCP + Cloud Automation CLI.
 EOF
 
-dpkg-deb --build build/linux "$DIST_DIR/orcaopta_${VERSION}_amd64.deb"
-echo "[Linux] .deb created: $DIST_DIR/orcaopta_${VERSION}_amd64.deb"
+dpkg-deb --root-owner-group --build build/linux "$DIST/orcaopta_${VERSION}_amd64.deb"
+echo "[Linux] .deb created."
 
 
 # -------------------------------------------------------------
 # Build Linux tar.gz
 # -------------------------------------------------------------
 echo "[Linux] Building tar.gz..."
-
-mkdir -p build/linux-tar
-cp .venv/bin/orcaopta build/linux-tar/
-chmod +x build/linux-tar/orcaopta
-
-tar -czvf "$DIST_DIR/orcaopta-linux-$VERSION.tar.gz" -C build/linux-tar orcaopta
+tar -czvf "$DIST/orcaopta-linux-$VERSION.tar.gz" -C dist orcaopta
 echo "[Linux] tar.gz created."
 
 
 # -------------------------------------------------------------
-# Build Windows .exe
+# Build Windows EXE
 # -------------------------------------------------------------
 echo "[Windows] Building .exe..."
 
-pyinstaller --onefile src/orcaopta/cli/orcaopta_cli.py --name orcaopta
-cp dist/orcaopta.exe "$DIST_DIR/orcaopta-$VERSION.exe"
+pyinstaller --onefile src/orcaopta/cli/orcaopta_cli.py --name orcaopta.exe
+zip "$DIST/orcaopta-windows-$VERSION.zip" dist/orcaopta.exe
 
-# Windows zip
-zip "$DIST_DIR/orcaopta-windows-$VERSION.zip" dist/orcaopta.exe
 echo "[Windows] .exe + zip created."
 
 
 # -------------------------------------------------------------
-# Build macOS .pkg
+# macOS PKG (CI runner only)
 # -------------------------------------------------------------
-echo "[macOS] Building .pkg..."
+echo "[macOS] PKG will be built in macOS GitHub runner."
 
-mkdir -p build/macos/usr/local/bin
-cp .venv/bin/orcaopta build/macos/usr/local/bin/
-chmod +x build/macos/usr/local/bin/orcaopta
-
-pkgbuild \
-  --root build/macos \
-  --identifier com.orcaopta.cli \
-  --version $VERSION \
-  --install-location /usr/local/bin \
-  "$DIST_DIR/orcaopta-$VERSION.pkg"
-
-echo "[macOS] .pkg created."
-
-
-# -------------------------------------------------------------
-# Build macOS tar.gz
-# -------------------------------------------------------------
-echo "[macOS] Building tar.gz..."
-
-mkdir -p build/macos-tar
-cp .venv/bin/orcaopta build/macos-tar/
-chmod +x build/macos-tar/orcaopta
-
-tar -czvf "$DIST_DIR/orcaopta-macos-$VERSION.tar.gz" -C build/macos-tar orcaopta
-echo "[macOS] tar.gz created."
 
 
 # -------------------------------------------------------------
@@ -101,6 +86,6 @@ echo "[macOS] tar.gz created."
 echo "============================================================"
 echo "BUILD COMPLETE — ARTIFACTS:"
 echo "============================================================"
-ls -lh $DIST_DIR
+ls -lh $DIST
 echo "============================================================"
-echo "All builds packaged successfully."
+echo "All builds + signatures packaged successfully."

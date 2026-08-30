@@ -1,0 +1,20 @@
+name: orcaopta
+base: core22
+version: "0.1.0"
+summary: Orcaopta Control Plane CLI
+description: |
+  Unified MCP + Cloud Automation CLI.
+
+grade: stable
+confinement: strict
+
+apps:
+  orcaopta:
+    command: bin/orcaopta
+
+parts:
+  orcaopta:
+    plugin: dump
+    source: dist/orcaopta-linux-0.1.0.tar.gz
+    organize:
+      orcaopta: bin/orcaopta

@@ -1,20 +1,10 @@
-# API Framework
 fastapi
 uvicorn[standard]
 python-multipart
 pydantic
 requests
 
-pandas
-numpy
-scikit-learn
-joblib
-
-stable-baselines3
-gymnasium
-
 SQLAlchemy
-
 
 opentelemetry-api
 opentelemetry-sdk
@@ -22,9 +12,6 @@ opentelemetry-exporter-otlp-proto-http
 
 cryptography
 ossaudit
-#hoppr-cop
-pyspark
-
 
 rich
 python-dotenv
@@ -36,3 +23,4 @@ attackcti
 stix2
 taxii2-client
 web3
+click

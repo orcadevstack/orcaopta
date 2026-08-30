@@ -1,0 +1,7 @@
+PackageIdentifier: Orcaopta.Orcaopta
+PackageVersion: 0.1.0
+InstallerType: exe
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/orcadevstack/orcaopta/releases/download/v0.1.0/orcaopta-windows-0.1.0.zip
+    InstallerSha256: <SHA256>

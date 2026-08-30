@@ -1,0 +1,7 @@
+PackageIdentifier: Orcaopta.Orcaopta
+PackageVersion: 0.1.0
+ManifestType: defaultLocale
+ManifestVersion: 1.4.0
+Publisher: OrcaDevStack
+PackageName: Orcaopta CLI
+ShortDescription: Unified MCP + Cloud Automation CLI

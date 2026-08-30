@@ -30,3 +30,7 @@ curl -X POST http://localhost:8000/model/deploy \
   -F "family=autoscale" \
   -F "version=v2" \
   -F "file=@autoscale_v2.pkl"
+
+wingetcreate submit \
+  --token <PAT> \
+  --manifest manifests/o/Orcaopta/Orcaopta/0.1.0/

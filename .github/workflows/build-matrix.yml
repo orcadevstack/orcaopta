@@ -1,0 +1,58 @@
+name: Orcaopta Multi-Platform Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04, debian-bookworm, debian-bullseye]
+        arch: [amd64, arm64]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: ./.github/actions/checkout
+
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev pkg-config fakeroot zip gnupg openssh-client
+
+      - name: Install Orcaopta Core
+        run: |
+          pip install ./orcaopta-core
+          pip install pyinstaller
+
+      - name: Build CLI
+        run: |
+          pyinstaller --onefile src/orcaopta/cli/orcaopta_cli.py --name orcaopta
+
+      - name: Build .deb
+        run: |
+          mkdir -p build/usr/local/bin
+          mkdir -p build/DEBIAN
+          cp dist/orcaopta build/usr/local/bin/orcaopta
+          cat > build/DEBIAN/control <<EOF
+Package: orcaopta
+Version: 0.1.0
+Architecture: ${matrix.arch}
+Maintainer: Samuel Orcas <orcaprojectstack@gmail.com>
+Description: Orcaopta Control Plane CLI
+EOF
+          dpkg-deb --root-owner-group --build build dist/orcaopta_${matrix.arch}.deb
+
+      - name: Upload artifacts
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: orcaopta-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/
