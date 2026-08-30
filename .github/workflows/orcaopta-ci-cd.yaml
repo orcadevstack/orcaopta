@@ -9,18 +9,15 @@ on:
 
 jobs:
 
-  # ============================================================
-  # TEST + LINT + DOCKER
-  # ============================================================
   build-core:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: ./.github/actions/checkout
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: ./.github/actions/setup-python
         with:
           python-version: "3.13"
 
@@ -54,19 +51,16 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/orcaopta:latest
 
 
-  # ============================================================
-  # BUILD CLI 
-  # ============================================================
   build-cli:
     needs: build-core
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: ./.github/actions/checkout
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: ./.github/actions/setup-python
         with:
           python-version: "3.13"
 
@@ -76,34 +70,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y dpkg-dev pkg-config fakeroot zip
 
-      - name: Build CLI (Linux .deb, macOS .pkg, Windows .exe, tarballs)
+      - name: Build CLI
         run: |
           chmod +x build.sh
           ./build.sh
 
       - name: Upload CLI artifacts
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/upload-artifact
         with:
           name: orcaopta-cli
           path: dist/
 
 
-  # ============================================================
-  # DEPLOY TO KUBERNETES
-  # ============================================================
   deploy:
     needs: build-cli
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: ./.github/actions/checkout
 
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+        uses: ./.github/actions/setup-kubectl
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3
+        uses: ./.github/actions/setup-helm
 
       - name: Load KUBECONFIG
         run: |
@@ -131,19 +122,16 @@ jobs:
           curl -f http://orcaopta-app.orcaopta.svc.cluster.local:8000/docs
 
 
-  # ============================================================
-  # AI ROLLBACK 
-  # ============================================================
   ai-rollback:
     needs: deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: ./.github/actions/checkout
 
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+        uses: ./.github/actions/setup-kubectl
 
       - name: Load KUBECONFIG
         run: |

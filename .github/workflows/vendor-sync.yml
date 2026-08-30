@@ -1,0 +1,27 @@
+name: Sync Vendored Actions
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # Every Monday at 03:00
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run vendor script
+        run: |
+          chmod +x scripts/vendor-actions.sh
+          ./scripts/vendor-actions.sh
+
+      - name: Commit updates
+        run: |
+          git config user.name "orcaopta-bot"
+          git config user.email "bot@orcaopta.dev"
+          git add .github/actions
+          git commit -m "chore: sync vendored GitHub Actions" || echo "No changes"
+          git push
