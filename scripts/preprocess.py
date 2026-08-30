@@ -1,5 +1,5 @@
 import pandas as pd
-from src.utils import ensure_dir
+from orcaopta.utils import ensure_dir
 
 ensure_dir("data/processed")
 

@@ -1,0 +1,23 @@
+
+services:
+  orcaopta:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.core
+    container_name: orcaopta
+    ports:
+      - "8000:8000"
+    environment:
+      ORCAOPTA_ENCRYPTION_KEY: "${ORCAOPTA_ENCRYPTION_KEY}"
+      ORCAOPTA_MODE: core
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ../mlruns:/app/mlruns
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ..:/app
+    restart: unless-stopped
+    command: >
+      uvicorn orcaopta.api.main:app
+      --host 0.0.0.0
+      --port 8000

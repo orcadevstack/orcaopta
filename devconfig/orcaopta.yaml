@@ -1,0 +1,46 @@
+orcaopta:
+  name: "Orcaopta Dev"
+  version: "0.1.0"
+  environment: "dev"
+  mode: "single-node"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "debug"
+
+database:
+  url: "sqlite:///orcaopta.db"
+
+models:
+  directory: "./models"
+  core_model: "orcaopta_core_model.pkl"
+
+autoscaling:
+  enabled: false
+
+ml:
+  autoscale: "disabled"
+
+security:
+  encryption_key: "dev-key"
+  allow_public_api: true
+
+logging:
+  level: "debug"
+  file: "./orcaopta.log"
+
+openstack:
+  enabled: false
+
+spark:
+  enabled: false
+
+telemetry:
+  enabled: false
+
+attack:
+  enabled: false
+
+terraform:
+  enabled: false

@@ -1,0 +1,17 @@
+project: orcaopta
+version: 1.0
+
+entrypoint: runner.py
+
+parameters:
+  job:
+    type: string
+    default: "train_rl"
+
+environment:
+  python: "3.12"
+  dependencies:
+    - pandas
+    - scikit-learn
+    - stable-baselines3
+    - gymnasium

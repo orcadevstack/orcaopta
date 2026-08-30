@@ -1,6 +1,6 @@
 
 from openstack import connection
-from src.orcaopta.core.config import load_config
+from orcaopta.core.config import load_config
 config = load_config()
 ceph_conf = config["cloud"]["ceph"]["config_path"]
 openstack_auth = config["cloud"]["openstack"]

@@ -1,12 +1,12 @@
 from pyspark.sql import SparkSession
-from . import pipeline_utils  # optional if you want helpers
+from spark.pipelines import pipeline_utils
 
-from src.spark.ingestion.log_ingest import create_spark, ingest_logs, union_all
-from src.spark.processing.log_etl import parse_basic_fields, filter_noise
-from src.spark.ingestion.telemetry_ingest import ingest_metrics
-from src.spark.processing.telemetry_etl import normalize_metrics
-from src.spark.analytics.sla_slo import compute_slo
-from src.spark.anomaly.distributed_anomaly import zscore_anomaly
+from spark.ingestion.log_ingest import create_spark, ingest_logs, union_all
+from spark.processing.log_etl import parse_basic_fields, filter_noise
+from spark.ingestion.telemetry_ingest import ingest_metrics
+from spark.processing.telemetry_etl import normalize_metrics
+from spark.analytics.sla_slo import compute_slo
+from spark.anomaly.distributed_anomaly import zscore_anomaly
 
 def run_pipeline(config: dict):
     spark = create_spark("OrcaoptaSparkPipeline")

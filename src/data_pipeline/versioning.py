@@ -1,7 +1,7 @@
 import os
 import shutil
 from datetime import datetime
-from src.utils import ensure_dir
+from orcaopta.utils import ensure_dir
 
 VERSION_DIR = "data/versions"
 

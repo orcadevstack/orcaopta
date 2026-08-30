@@ -1,6 +1,6 @@
 
 from kubernetes import client, config
-from src.orcaopta.core.config import load_config
+from orcaopta.core.config import load_config
 config = load_config()
 
 kubeconfig = config["cloud"]["kubernetes"]["kubeconfig"]

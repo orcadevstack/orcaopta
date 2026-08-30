@@ -1,38 +1,132 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "orcaopta"
 version = "0.1.0"
-description = "Cloud-native ML, training, and API stack for Orcaopta"
+description = "Cloud-native SRE automation framework with ML, RL, observability, and intelligent remediation."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
 authors = [
     { name = "Samuel Orcas", email = "orcaprojectstack@gmail.com" }
 ]
-requires-python = ">=3.10"
+
+keywords = [
+    "sre", "ml", "rl", "observability", "cloud", "automation",
+    "openstack", "kubernetes", "telemetry", "autoscaling"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Framework :: FastAPI",
+    "Topic :: System :: Monitoring",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
 
 dependencies = [
+    # Core API
     "fastapi",
     "uvicorn[standard]",
     "python-multipart",
+    "pydantic",
+    "requests",
+
+    # Core ML
     "pandas",
+    "numpy",
     "scikit-learn",
     "joblib",
-    "shap",
-    "mlflow",
-    "pyspark",
+    "stable-baselines3",
+    "gymnasium",
+    "SQLAlchemy",
+
+    # Observability
     "opentelemetry-api",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
-    "scipy",
-    "seaborn",
-    "xarray",
-    "opencv-python",
-    "scikit-image",
-    "networkx",
-    "biopython",
-    "rdkit-pypi",
-    "astropy",
-    "pywavelets",
-    "python-control"
+
+    # Security
+    "cryptography",
+    "ossaudit",
+
+    # AI / LLM Automation
+    "hoppr-cop",
+
+    # Utilities
+    "rich",
+    "python-dotenv",
+    "typer",
+    "orjson",
+    "pyyaml"
 ]
 
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+[project.optional-dependencies]
+dashboard = [
+    "matplotlib>=3.11",
+    "seaborn",
+    "plotly",
+    "pyvis",
+    "networkx",
+    "streamlit"
+]
+
+cloud = [
+    "openstacksdk",
+    "kubernetes",
+    "python-hcl2"
+]
+
+spark = [
+    "pyspark",
+    "py4j",
+    "kafka-python"
+]
+
+explain = [
+    "shap"
+]
+
+mlflow-legacy = [
+    "mlflow",
+    "protobuf",
+    "sqlalchemy",
+    "alembic"
+]
+
+notebooks = [
+    "jupyter",
+    "notebook",
+    "jupyterlab",
+    "ipython",
+    "ipykernel",
+    "pyzmq",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "plotly",
+    "networkx",
+    "pyvis",
+    "scikit-learn",
+    "joblib"
+]
+
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+    "mypy",
+    "pre-commit"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

@@ -1,12 +1,12 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
-from src.spark.jobs.streaming_job import create_streaming_session
-from src.spark.anomaly.drift_detection import page_hinkley_drift
-from src.spark.correlation.event_correlation import enterprise_event_correlation
-from src.spark.correlation.incident_prediction import predict_incidents
-from src.spark.correlation.remediation_graph import build_remediation_graph
-from src.orcaopta.controller.self_healing_controller import run_self_healing
+from spark.jobs.streaming_job import create_streaming_session
+from spark.anomaly.drift_detection import page_hinkley_drift
+from spark.correlation.event_correlation import enterprise_event_correlation
+from spark.correlation.incident_prediction import predict_incidents
+from spark.correlation.remediation_graph import build_remediation_graph
+from orcaopta.controller.self_healing_controller import run_self_healing
 
 
 def run_sre_stream():

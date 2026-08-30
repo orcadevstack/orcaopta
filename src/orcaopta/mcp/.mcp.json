@@ -1,0 +1,20 @@
+{
+  "name": "orcaopta-mcp",
+  "version": "1.0.0",
+  "description": "Orcaopta Control Plane MCP Server",
+  "endpoint": "http://localhost:8000/mcp",
+  "tools": [
+    "gpu_profiler",
+    "ml_signals",
+    "rl_signals",
+    "cloud_graph",
+    "openstack_audit",
+    "kubernetes_audit",
+    "terraform_audit",
+    "ceph_health",
+    "k8s_node_stats",
+    "system_config",
+    "system_mode",
+    "start_supervisor"
+  ]
+}

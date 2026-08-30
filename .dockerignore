@@ -1,0 +1,13 @@
+*.ipynb
+data/
+logs/
+__pycache__/
+spark/
+dashboard/
+workers/
+graph/
+rl/
+ml/
+.env
+.git
+.gitignore

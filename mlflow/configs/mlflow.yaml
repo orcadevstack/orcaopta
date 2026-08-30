@@ -1,4 +1,0 @@
-tracking_uri: http://mlflow:5000
-artifact_uri: s3://orcaopta-artifacts
-backend_store: postgresql://mlflow:mlflowpass@postgres:5432/mlflowdb
-default_experiment: orcaopta-ml

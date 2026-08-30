@@ -18,3 +18,15 @@ docker run -p 8000:8000 \
   -e ORCAOPTA_ROLE=api \
   -e MLFLOW_TRACKING_URI=http://mlflow:5000 \
   orcaopta-standalone
+
+
+curl -X POST http://localhost:8000/model/deploy \
+  -F "family=anomaly" \
+  -F "version=v3" \
+  -F "file=@anomaly_v3.pkl"
+Deploy autoscale model v2:
+Code
+curl -X POST http://localhost:8000/model/deploy \
+  -F "family=autoscale" \
+  -F "version=v2" \
+  -F "file=@autoscale_v2.pkl"

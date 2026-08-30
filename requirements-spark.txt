@@ -1,5 +1,0 @@
-pyspark==3.5.1
-minio
-mlflow
-pandas
-pyyaml

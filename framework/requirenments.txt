@@ -1,0 +1,47 @@
+# =========================================================
+# 1. Core API Framework
+# =========================================================
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+requests
+
+# =========================================================
+# 2. Machine Learning & Reinforcement Learning Framework
+# =========================================================
+pandas
+scikit-learn
+joblib
+stable-baselines3
+gymnasium
+
+# SHAP is optional and heavy — moved to requirements-explainability.txt
+# shap
+
+# =========================================================
+# 3. Observability & Telemetry Framework
+# =========================================================
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-http
+
+# =========================================================
+# 4. Security & Compliance Framework
+# =========================================================
+cryptography
+ossaudit
+
+# =========================================================
+# 5. AI / LLM Automation Framework
+# =========================================================
+hoppr-cop
+
+# =========================================================
+# 6. Framework Utilities
+# =========================================================
+rich
+python-dotenv
+typer
+orjson
+pyyaml

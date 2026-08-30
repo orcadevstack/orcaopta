@@ -1,0 +1,5 @@
+pyspark==3.5.1
+minio
+pyyaml
+py4j
+kafka-python

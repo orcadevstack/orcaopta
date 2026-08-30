@@ -1,0 +1,50 @@
+orcaopta:
+  name: "Orcaopta Cloud AI"
+  version: "1.0.0"
+  environment: "production"
+  mode: "cluster"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "warning"
+
+database:
+  url: "postgresql://orcaopta:securepass@db/orcaopta"
+
+models:
+  directory: "/app/models"
+  core_model: "orcaopta_core_model.pkl"
+
+autoscaling:
+  enabled: true
+  min_replicas: 3
+  max_replicas: 20
+  cooldown_seconds: 60
+
+ml:
+  autoscale: "disabled"
+
+security:
+  encryption_key: "CHANGE_ME"
+  allow_public_api: false
+
+logging:
+  level: "warning"
+  file: "/app/logs/orcaopta.log"
+
+openstack:
+  enabled: true
+
+spark:
+  enabled: true
+
+telemetry:
+  enabled: false
+
+attack:
+  enabled: false
+
+terraform:
+  enabled: true
+  working_dir: ./terraform

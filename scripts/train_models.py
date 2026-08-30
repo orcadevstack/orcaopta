@@ -2,7 +2,7 @@ import mlflow
 import mlflow.sklearn
 import pandas as pd
 
-from src.utils.tracing import setup_tracing
+from orcaopta.utils.tracing import setup_tracing
 
 from src.ml.data_loader import load_raw_data
 from src.ml.preprocess import preprocess_data

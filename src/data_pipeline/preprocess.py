@@ -1,5 +1,5 @@
 import pandas as pd
-from src.utils import ensure_dir
+from orcaopta.utils import ensure_dir
 
 RAW_PATH = "data/raw/cloud_metrics_raw.csv"
 PROCESSED_PATH = "data/processed/train.csv"

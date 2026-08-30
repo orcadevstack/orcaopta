@@ -1,0 +1,32 @@
+
+FROM python:3.12-slim AS core
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libssl-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirenments/requirements-core.txt /app/requirements-core.txt
+RUN pip install --no-cache-dir -r /app/requirements-core.txt
+RUN pip install python-openstackclient
+RUN pip install setuptools
+
+
+COPY src/ /app/src/
+COPY spark_config.json /app/spark_config.json
+
+
+ENV PYTHONPATH=/app/src
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]

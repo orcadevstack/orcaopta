@@ -1,0 +1,15 @@
+jupyter
+notebook
+jupyterlab
+ipython
+ipykernel
+pyzmq
+pandas
+numpy
+matplotlib
+seaborn
+plotly
+networkx
+pyvis
+scikit-learn
+joblib

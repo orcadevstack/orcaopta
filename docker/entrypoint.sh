@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo ""
 echo "==============================================="
@@ -6,11 +7,24 @@ echo "   ORCAOPTA CLOUD BRAIN — AUTO START"
 echo "==============================================="
 echo ""
 
-# -----------------------------
-# Auto-detect environment
-# -----------------------------
 echo " Orcaopta Auto-Detect Mode Starting..."
 
+# ---------------------------------------------------------
+# Ensure required directories exist
+# ---------------------------------------------------------
+mkdir -p /app/data/tracking
+mkdir -p /app/data/artifacts
+mkdir -p /app/models
+
+# ---------------------------------------------------------
+# Load tracing config (Python handles OTLP setup)
+# ---------------------------------------------------------
+export ORCAOPTA_OTLP_ENDPOINT=${ORCAOPTA_OTLP_ENDPOINT:-"http://localhost:5000/v1/traces"}
+export ORCAOPTA_EXPERIMENT_ID=${ORCAOPTA_EXPERIMENT_ID:-"0"}
+
+# ---------------------------------------------------------
+# Detect Cloud Components
+# ---------------------------------------------------------
 if openstack --version >/dev/null 2>&1; then
     export ORCAOPTA_OPENSTACK_AVAILABLE=true
     echo " OpenStack detected"
@@ -43,13 +57,25 @@ else
     echo " Terraform NOT detected"
 fi
 
-# -----------------------------
-# Decide mode
-# -----------------------------
+# ---------------------------------------------------------
+# Detect Spark (Optional Plugin)
+# ---------------------------------------------------------
+if spark-submit --version >/dev/null 2>&1; then
+    export ORCAOPTA_SPARK_AVAILABLE=true
+    echo " Spark detected"
+else
+    export ORCAOPTA_SPARK_AVAILABLE=false
+    echo " Spark NOT detected"
+fi
+
+# ---------------------------------------------------------
+# Decide Mode
+# ---------------------------------------------------------
 if [ "$ORCAOPTA_OPENSTACK_AVAILABLE" = true ] || \
    [ "$ORCAOPTA_CEPH_AVAILABLE" = true ] || \
    [ "$ORCAOPTA_K8S_AVAILABLE" = true ] || \
-   [ "$ORCAOPTA_TERRAFORM_AVAILABLE" = true ]; then
+   [ "$ORCAOPTA_TERRAFORM_AVAILABLE" = true ] || \
+   [ "$ORCAOPTA_SPARK_AVAILABLE" = true ]; then
 
     export ORCAOPTA_MODE=cluster
     echo " Running in CLUSTER MODE"
@@ -59,9 +85,9 @@ else
     echo " Running in STANDALONE MODE"
 fi
 
-# -----------------------------
-# Startup Banner
-# -----------------------------
+# ---------------------------------------------------------
+# Banner
+# ---------------------------------------------------------
 python - << 'EOF'
 from datetime import datetime
 import os
@@ -71,14 +97,6 @@ now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 print(f"""
 ===========================================================
- 
-    ██████╗   ██████╗   ██████╗    ██████╗    ██████╗   ███████╗  ████████╗   ██████╗ 
-██╔═══██╗ ██╔═══██╗ ██╔═══██╗  ██╔═══██╗  ██╔══██╗  ██╔════╝  ╚══██╔══╝  ██╔═══██╗
-██║   ██║ ██║   ██║ ██║   ██║  ██║   ██║  ██████╔╝  ███████╗     ██║     ██║   ██║
-██║   ██║ ██║   ██║ ██║   ██║  ██║   ██║  ██╔══██╗  ██╔═══██╗    ██║     ██║   ██║
-╚██████╔╝ ╚██████╔╝ ╚██████╔╝  ╚██████╔╝  ██║  ██║  ███████║    ██║     ╚██████╔╝
- ╚═════╝   ╚═════╝   ╚═════╝    ╚═════╝   ╚═╝  ╚═╝  ╚══════╝    ╚═╝      ╚═════╝ 
-
                  ORCAOPTA CLOUD BRAIN
 -----------------------------------------------------------
  Mode: {mode}
@@ -87,11 +105,24 @@ print(f"""
 """)
 EOF
 
-# -----------------------------
-# Start API + MCP server
-# -----------------------------
+# ---------------------------------------------------------
+# Start API
+# ---------------------------------------------------------
 echo " Starting API on port 8000..."
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000 &
+uvicorn orcaopta.api.main:app --host 0.0.0.0 --port 8000 &
 
+# ---------------------------------------------------------
+# Start MCP Server
+# ---------------------------------------------------------
 echo " Starting MCP server..."
-python -m src.orcaopta.mcp_server.server
+python -m orcaopta.mcp.server &
+
+# ---------------------------------------------------------
+# Start Spark (Optional)
+# ---------------------------------------------------------
+if [ "$ORCAOPTA_SPARK_AVAILABLE" = true ]; then
+    echo " Starting Spark worker..."
+    python -m orcaopta.spark.worker &
+fi
+
+wait

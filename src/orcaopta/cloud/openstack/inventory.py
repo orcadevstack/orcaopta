@@ -1,5 +1,5 @@
 
-from src.orcaopta.cloud.openstack.client import get_conn
+from orcaopta.cloud.openstack.client import get_conn
 
 
 def list_servers():

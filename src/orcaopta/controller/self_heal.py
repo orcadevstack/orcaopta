@@ -1,12 +1,20 @@
 import threading
 import time
 import logging
+import shutil
 
-from src.orcaopta.core.config import load_config
-from src.orcaopta.ai.agent import ai_self_heal_plan
-from src.orcaopta.core.events import add_event
-from src.orcaopta.cloud.graph import build_cloud_graph
 from typing import Dict, Any
+
+# Core
+from orcaopta.core.config import load_config
+from orcaopta.ai.agent import ai_self_heal_plan
+from orcaopta.core.events import add_event
+
+# Cloud Graph
+try:
+    from orcaopta.cloud.detect.graph import build_cloud_graph
+except Exception:
+    build_cloud_graph = None
 
 logger = logging.getLogger("orcaopta-heal")
 
@@ -20,7 +28,7 @@ interval = config.get("self_heal", {}).get("interval_seconds", 60)
 
 def is_openstack_available():
     try:
-        from openstack import connection  # noqa
+        import openstack  # noqa
         return True
     except Exception:
         return False
@@ -28,23 +36,23 @@ def is_openstack_available():
 
 def is_kubernetes_available():
     try:
-        from kubernetes import client  # noqa
+        import kubernetes  # noqa
         return True
     except Exception:
         return False
 
 
 def is_terraform_available():
-    import shutil
     return shutil.which("terraform") is not None
 
 
 def is_ceph_available():
-    import shutil
     return shutil.which("ceph") is not None
 
 
 def is_cloud_graph_available():
+    if not build_cloud_graph:
+        return False
     try:
         graph = build_cloud_graph()
         return bool(graph)
@@ -84,13 +92,56 @@ def execute_standalone_fixes(plan: str):
 
 
 # ============================================================
-# CLUSTER-MODE HEALING (OPENSTACK + CEPH + K8S + TERRAFORM)
+# OPTIONAL IMPORTS (SAFE)
+# ============================================================
+
+# --- OpenStack ---
+try:
+    from orcaopta.cloud.openstack.config_audit import audit_openstack_config
+    from orcaopta.cloud.openstack.network_audit import audit_network
+    from orcaopta.cloud.openstack.storage_audit import (
+        audit_storage,
+        delete_unused_volume,
+        resize_ceph_pool,
+        move_ceph_data,
+        adjust_volume_type_qos,
+        react_to_ceph_health,
+    )
+except Exception:
+    audit_openstack_config = audit_network = audit_storage = None
+    delete_unused_volume = resize_ceph_pool = move_ceph_data = None
+    adjust_volume_type_qos = react_to_ceph_health = None
+
+# --- Kubernetes ---
+try:
+    from orcaopta.cloud.kubernetes.config_audit import (
+        audit_kubernetes_config,
+        tighten_rbac,
+        add_podsecurity_labels,
+        create_default_network_policy,
+    )
+except Exception:
+    audit_kubernetes_config = tighten_rbac = None
+    add_podsecurity_labels = create_default_network_policy = None
+
+# --- Terraform ---
+try:
+    from orcaopta.cloud.terraform.plan_audit import (
+        audit_terraform_plan,
+        execute_terraform_plan,
+    )
+except Exception:
+    audit_terraform_plan = execute_terraform_plan = None
+
+
+# ============================================================
+# CLUSTER-MODE HEALING
 # ============================================================
 
 def cluster_global_self_heal():
-    """
-    Unified multi-cloud healing using cloud graph if available.
-    """
+    if not build_cloud_graph:
+        return None
+
     try:
         graph = build_cloud_graph()
         plan = ai_self_heal_plan([{"cloud_graph": graph}])
@@ -106,50 +157,36 @@ def cluster_global_self_heal():
         return None
 
 
-# --- OpenStack / Storage / Network / Kubernetes / Terraform imports ---
-
-from src.orcaopta.cloud.openstack.config_audit import audit_openstack_config
-from src.orcaopta.cloud.openstack.network_audit import audit_network
-from src.orcaopta.cloud.openstack.storage_audit import (
-    audit_storage,
-    delete_unused_volume,
-    resize_ceph_pool,
-    move_ceph_data,
-    adjust_volume_type_qos,
-    react_to_ceph_health,
-)
-
-from src.orcaopta.cloud.kubernetes.config_audit import (
-    audit_kubernetes_config,
-    tighten_rbac,
-    add_podsecurity_labels,
-    create_default_network_policy,
-)
-
-from src.orcaopta.cloud.terraform.plan_audit import (
-    audit_terraform_plan,
-    execute_terraform_plan,
-)
-
-
-# --- Cluster-mode healing functions ---
+# ============================================================
+# OPENSTACK HEALING
+# ============================================================
 
 def openstack_self_heal():
+    if not audit_openstack_config:
+        return None
+
     issues = audit_openstack_config()
     plan = ai_self_heal_plan([{"openstack_config_issues": issues}])
+
     add_event("openstack", {
         "plan": plan,
         "issues": issues,
         "summary": "OpenStack self-heal plan generated",
     })
+
     return plan
 
 
 def execute_openstack_fixes(plan: str):
-    if not plan:
+    if not plan or not audit_openstack_config:
         return
 
-    from openstack import connection
+    try:
+        from openstack import connection
+    except Exception:
+        logger.warning("OpenStack SDK not installed")
+        return
+
     conn = connection.Connection(
         auth_url="https://your-keystone:5000/v3",
         project_name="admin",
@@ -160,8 +197,8 @@ def execute_openstack_fixes(plan: str):
         project_domain_name="Default",
     )
 
-    deleted = []
     if "delete unused volume" in plan.lower():
+        deleted = []
         for vol in conn.block_storage.volumes():
             if not vol.attachments:
                 conn.block_storage.delete_volume(vol.id, ignore_missing=True)
@@ -173,14 +210,23 @@ def execute_openstack_fixes(plan: str):
         })
 
 
+# ============================================================
+# NETWORK HEALING
+# ============================================================
+
 def network_self_heal():
+    if not audit_network:
+        return None
+
     issues = audit_network()
     plan = ai_self_heal_plan([{"network_issues": issues}])
+
     add_event("network", {
         "plan": plan,
         "issues": issues,
         "summary": "Network self-heal plan generated",
     })
+
     return plan
 
 
@@ -195,22 +241,36 @@ def execute_network_fixes(plan: str):
         logger.info("[Cluster] OVN default route fix requested (placeholder).")
 
 
+# ============================================================
+# STORAGE HEALING
+# ============================================================
+
 def storage_self_heal():
+    if not audit_storage:
+        return None
+
     issues = audit_storage()
     plan = ai_self_heal_plan([{"storage_issues": issues}])
+
     add_event("storage", {
         "plan": plan,
         "issues": issues,
         "summary": "Storage self-heal plan generated",
     })
+
     return plan
 
 
 def execute_storage_fixes(plan: str):
-    if not plan:
+    if not plan or not audit_storage:
         return
 
-    from openstack import connection
+    try:
+        from openstack import connection
+    except Exception:
+        logger.warning("OpenStack SDK not installed")
+        return
+
     conn = connection.Connection(
         auth_url="https://your-keystone:5000/v3",
         project_name="admin",
@@ -222,7 +282,6 @@ def execute_storage_fixes(plan: str):
     )
 
     if "delete unused volume" in plan.lower():
-        logger.info("[Cluster] Deleting unused volumes...")
         for vol in conn.block_storage.volumes():
             if not vol.attachments:
                 delete_unused_volume(conn, vol.id)
@@ -240,22 +299,36 @@ def execute_storage_fixes(plan: str):
         react_to_ceph_health(plan)
 
 
+# ============================================================
+# KUBERNETES HEALING
+# ============================================================
+
 def kubernetes_self_heal():
+    if not audit_kubernetes_config:
+        return None
+
     issues = audit_kubernetes_config()
     plan = ai_self_heal_plan([{"kubernetes_config_issues": issues}])
+
     add_event("kubernetes", {
         "plan": plan,
         "issues": issues,
         "summary": "Kubernetes self-heal plan generated",
     })
+
     return plan
 
 
 def execute_kubernetes_fixes(plan: str):
-    if not plan:
+    if not plan or not audit_kubernetes_config:
         return
 
-    from kubernetes import client
+    try:
+        from kubernetes import client
+    except Exception:
+        logger.warning("Kubernetes SDK not installed")
+        return
+
     core = client.CoreV1Api()
 
     if "tighten rbac" in plan.lower():
@@ -270,25 +343,34 @@ def execute_kubernetes_fixes(plan: str):
             create_default_network_policy(ns.metadata.name)
 
 
+# ============================================================
+# TERRAFORM HEALING
+# ============================================================
+
 def terraform_self_heal():
+    if not audit_terraform_plan:
+        return None
+
     issues = audit_terraform_plan()
     plan = ai_self_heal_plan([{"terraform_issues": issues}])
+
     add_event("terraform", {
         "plan": plan,
         "issues": issues,
         "summary": "Terraform self-heal plan generated",
     })
+
     return plan
 
 
 def execute_terraform_fixes(plan: str):
-    if not plan:
+    if not plan or not execute_terraform_plan:
         return
     execute_terraform_plan(plan)
 
 
 # ============================================================
-# MAIN LOOP WITH AUTO-DETECT
+# MAIN LOOP
 # ============================================================
 
 def healing_worker(queue, interval_seconds: int = None):
@@ -299,37 +381,33 @@ def healing_worker(queue, interval_seconds: int = None):
 
     while True:
         try:
-            # If cloud graph or any cloud subsystem is available → cluster mode
-            if is_cloud_graph_available() or any([
+            cluster_mode = any([
+                is_cloud_graph_available(),
                 is_openstack_available(),
                 is_kubernetes_available(),
                 is_terraform_available(),
                 is_ceph_available(),
-            ]):
+            ])
+
+            if cluster_mode:
                 logger.info("[Heal] Cluster mode detected.")
 
-                # Global cloud graph healing
                 plan_global = cluster_global_self_heal()
 
-                # OpenStack
                 if is_openstack_available():
                     plan = openstack_self_heal()
                     execute_openstack_fixes(plan)
 
-                # Network
                 plan = network_self_heal()
                 execute_network_fixes(plan)
 
-                # Storage
                 plan = storage_self_heal()
                 execute_storage_fixes(plan)
 
-                # Kubernetes
                 if is_kubernetes_available():
                     plan = kubernetes_self_heal()
                     execute_kubernetes_fixes(plan)
 
-                # Terraform
                 if is_terraform_available():
                     plan = terraform_self_heal()
                     execute_terraform_fixes(plan)
@@ -338,8 +416,7 @@ def healing_worker(queue, interval_seconds: int = None):
                     queue.publish({"type": "cluster_heal", "plan": plan_global})
 
             else:
-                # No cloud graph, no infra → standalone mode
-                logger.info("[Heal] Standalone mode detected (no cloud infra).")
+                logger.info("[Heal] Standalone mode detected.")
 
                 plan = standalone_system_check()
                 execute_standalone_fixes(plan)
@@ -362,31 +439,3 @@ def start_healing_loop(queue, interval_seconds: int = None):
     thread.start()
     logger.info("Healing loop thread started (auto-detect).")
     return thread
-
-
-# This is a placeholder for integration with your actual cloud APIs (K8s, OpenStack, Terraform, etc.)
-
-def execute_remediation(remediation_row: Dict[str, Any]):
-    """
-    Execute remediation based on remediation graph row.
-    """
-    action = remediation_row.get("action")
-    rtype = remediation_row.get("remediation_type")
-    target = remediation_row.get("remediation_target")
-
-    # Here we would call:
-    # - Kubernetes API (restart pod, scale deployment)
-    # - OpenStack API (restart service, rebalance)
-    # - Terraform (apply drift fix)
-    # - OVN/Ceph actions
-
-    print(f"[SELF-HEAL] action={action} type={rtype} target={target}")
-
-
-def run_self_healing(remediation_df):
-    """
-    Iterate over remediation graph and trigger actions.
-    """
-    rows = remediation_df.collect()
-    for row in rows:
-        execute_remediation(row.asDict())

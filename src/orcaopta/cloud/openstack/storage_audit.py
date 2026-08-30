@@ -1,4 +1,4 @@
-# src/orcaopta/cloud/openstack/storage_audit.py
+
 
 import subprocess
 from openstack import connection
