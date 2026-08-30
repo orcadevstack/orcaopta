@@ -1,0 +1,54 @@
+name: Orcaopta Global Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 0.2.0)"
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: ./.github/actions/checkout
+
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          python-version: "3.13"
+
+      - name: Build CLI artifacts
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Create git tag
+        run: |
+          VERSION="${{ inputs.version }}"
+          git config user.name "orcaopta-bot"
+          git config user.email "bot@orcaopta.dev"
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          gh release create "v${VERSION}" \
+            --title "Orcaopta v${VERSION}" \
+            --notes "Orcaopta ${VERSION} global release"
+
+      - name: Upload artifacts to Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          for file in dist/*; do
+            echo "Uploading $file"
+            gh release upload "v${VERSION}" "$file"
+          done
