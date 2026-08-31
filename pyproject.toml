@@ -117,8 +117,8 @@ dependencies = [
     ##############################
     "docker",
     "kubernetes",
-    shap
-    
+
+
     ##############################
     # Threat Intel / Blockchain
     ##############################
