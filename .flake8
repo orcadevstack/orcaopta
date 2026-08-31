@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 120
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .venv,
+    .mypy_cache,
+    .pytest_cache
+
+ignore =
+    E203,
+    E266,
+    E501,
+    W503,
+    F403,
+    F405
+
+# Plugins (flake8-bugbear, flake8-comprehensions, flake8-docstrings)
+select = B,C,E,F,W,T4,B9

@@ -1,92 +1,112 @@
-# Orcaopta Makefile
+# ============================================
+# ORCAOPTA — MAKEFILE
+# Cloud-native SRE + Security Automation
+# ============================================
 
+PYTHON := python3
+PACKAGE := orcaopta
+SRC := src/orcaopta
+
+# --------------------------------------------
+# ENVIRONMENT
+# --------------------------------------------
+.PHONY: venv
+venv:
+    $(PYTHON) -m venv .venv
+    . .venv/bin/activate && pip install --upgrade pip setuptools wheel
+
+.PHONY: install
 install:
-    python -m venv .venv
-    .venv/bin/pip install -r requirements.txt
+    . .venv/bin/activate && pip install -e .
 
+.PHONY: install-dev
+install-dev:
+    . .venv/bin/activate && pip install -e .[dev]
+
+# --------------------------------------------
+# LINTING & FORMATTING
+# --------------------------------------------
+.PHONY: lint
+lint:
+    flake8 $(SRC)
+
+.PHONY: format
+format:
+    black $(SRC)
+
+.PHONY: typecheck
+typecheck:
+    mypy $(SRC)
+
+# --------------------------------------------
+# TESTING
+# --------------------------------------------
+.PHONY: test
 test:
-    pytest
+    pytest -q
 
-train:
-    python scripts/train_models.py
+.PHONY: coverage
+coverage:
+    pytest --cov=$(PACKAGE) --cov-report=term-missing
 
-run-api:
-    uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+# --------------------------------------------
+# BUILD & PACKAGE
+# --------------------------------------------
+.PHONY: build
+build:
+    $(PYTHON) -m build
 
+.PHONY: clean
+clean:
+    rm -rf build dist *.egg-info .pytest_cache .mypy_cache
+
+# --------------------------------------------
+# DOCKER
+# --------------------------------------------
+.PHONY: docker-build
 docker-build:
-    docker build -t orcaopta-api -f docker/Dockerfile .
+    docker build -t orcaopta .
 
+.PHONY: docker-run
 docker-run:
-    docker run -p 8000:8000 orcaopta-api
+    docker run -p 8000:8000 orcaopta
 
-terraform-dev:
-    cd terraform && terraform apply -var="cloud=aws" -var="environment=dev"
+# --------------------------------------------
+# FASTAPI SERVER
+# --------------------------------------------
+.PHONY: api
+api:
+    uvicorn orcaopta.api.main:app --host 0.0.0.0 --port 8000 --reload
 
-terraform-staging:
-    cd terraform && terraform apply -var="cloud=azure" -var="environment=staging"
+# --------------------------------------------
+# SECURITY PIPELINES
+# --------------------------------------------
+.PHONY: scan-all
+scan-all:
+    $(PYTHON) -m orcaopta.cli.vscan_cli scan-all
 
-terraform-prod:
-    cd terraform && terraform apply -var="cloud=gcp" -var="environment=prod"
+.PHONY: scan-image
+scan-image:
+    $(PYTHON) -m orcaopta.cli.vscan_cli image $(IMAGE)
 
--
+.PHONY: scan-repo
+scan-repo:
+    $(PYTHON) -m orcaopta.cli.vscan_cli repo .
 
-notebook:
-    jupyter notebook notebooks
+.PHONY: scan-sbom
+scan-sbom:
+    $(PYTHON) -m orcaopta.cli.vscan_cli sbom $(IMAGE)
 
-notebook-ml:
-    jupyter notebook notebooks/ml_train.ipynb
+# --------------------------------------------
+# REPORT GENERATION
+# --------------------------------------------
+.PHONY: report-html
+report-html:
+    $(PYTHON) -m orcaopta.cli.vscan_cli sbom $(IMAGE) --html report.html
 
-notebook-eval:
-    jupyter notebook notebooks/evaluate.ipynb
-
-notebook-explain:
-    jupyter notebook notebooks/explain.ipynb
-
-notebook-tune:
-    jupyter notebook notebooks/tune.ipynb
-
-notebook-mlflow:
-    jupyter notebook notebooks/mlflow.ipynb
-
-notebook-rl-train:
-    jupyter notebook notebooks/rl_train.ipynb
-
-notebook-rl-eval:
-    jupyter notebook notebooks/rl_evaluate.ipynb
-
-notebook-rl-mlflow:
-    jupyter notebook notebooks/rl_mlflow.ipynb
-
-notebook-rl-explain:
-    jupyter notebook notebooks/rl_explain.ipynb
-
-notebook-rl-compare:
-    jupyter notebook notebooks/rl_compare.ipynb
-
-
-notebook-all:
-    jupyter notebook notebooks
-
-compose-up:
-    docker-compose up --build
-
-compose-down:
-    docker-compose down
-
-compose-restart:
-    docker-compose down && docker-compose up --build
-
-compose-logs:
-    docker-compose logs -f
-
-compose-mlflow:
-    docker-compose exec mlflow bash
-
-compose-minio:
-    docker-compose exec minio bash
-
-compose-api:
-    docker-compose exec api bash
-
-compose-trainer:
-    docker-compose exec rl-trainer bash
+# --------------------------------------------
+# RELEASE
+# --------------------------------------------
+.PHONY: release
+release:
+    $(PYTHON) -m twine upload dist/*
