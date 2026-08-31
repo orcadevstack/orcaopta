@@ -126,7 +126,6 @@ setup(
             "python-hcl2"
         ],
         "spark": [
-            "pyspark",
             "py4j",
             "kafka-python"
         ],

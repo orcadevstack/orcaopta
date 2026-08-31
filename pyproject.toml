@@ -64,10 +64,7 @@ dependencies = [
     "scikit-learn",
     "joblib",
 
-    ##############################
-    # SPARK SUBSYSTEM
-    ##############################
-    "pyspark",
+
 
     ##############################
     # CLOUD SCANNERS

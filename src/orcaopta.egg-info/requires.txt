@@ -21,7 +21,6 @@ torch
 transformers
 scikit-learn
 joblib
-pyspark
 boto3
 google-auth
 google-cloud-storage

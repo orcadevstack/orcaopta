@@ -38,7 +38,6 @@ Requires-Dist: torch
 Requires-Dist: transformers
 Requires-Dist: scikit-learn
 Requires-Dist: joblib
-Requires-Dist: pyspark
 Requires-Dist: boto3
 Requires-Dist: google-auth
 Requires-Dist: google-cloud-storage
