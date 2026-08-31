@@ -29,39 +29,102 @@ classifiers = [
 ]
 
 dependencies = [
-    # API Framework
+    ##############################
+    # ORCAOPTA CORE
+    ##############################
     "fastapi",
     "uvicorn[standard]",
     "python-multipart",
     "pydantic",
     "requests",
-
-    # Database / ORM
     "SQLAlchemy",
-
-    # Observability
-    "opentelemetry-api",
-    "opentelemetry-sdk",
-    "opentelemetry-exporter-otlp-proto-http",
-
-    # Security
     "cryptography",
     "ossaudit",
-
-    # CLI + Config
     "rich",
-    "click",
     "python-dotenv",
     "typer",
     "orjson",
     "pyyaml",
+    "click",
 
+    ##############################
+    # OBSERVABILITY
+    ##############################
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+
+    ##############################
+    # DATA + ML / MCP
+    ##############################
+    "pandas",
+    "numpy",
+    "torch",
+    "transformers",
+    "scikit-learn",
+    "joblib",
+
+
+
+    ##############################
+    # CLOUD SCANNERS
+    ##############################
+    "boto3",
+    "google-auth",
+    "google-cloud-storage",
+    "google-cloud-compute",
+    "azure-identity",
+    "azure-mgmt-storage",
+    "azure-mgmt-network",
+    "openstacksdk",
+
+    ##############################
+    # SAAS SCANNERS
+    ##############################
+    "requests",
+
+    ##############################
+    # CVE / VULNERABILITY PIPELINE
+    ##############################
+    "cve-bin-tool",
+    "nvdlib",
+    "vulners",
+
+    ##############################
+    # SBOM PROCESSING
+    ##############################
+    "cyclonedx-python-lib",
+    "spdx-tools",
+
+    ##############################
+    # ATTACK PATH GRAPHING
+    ##############################
+    "networkx",
+    "graphviz",
+    "pygraphviz",
+
+    ##############################
+    # YAML / JSON SECURITY
+    ##############################
+    "jsonschema",
+    "ruamel.yaml",
+
+    ##############################
+    # CONTAINER / K8S
+    ##############################
+    "docker",
+    "kubernetes",
+
+
+    ##############################
     # Threat Intel / Blockchain
+    ##############################
     "attackcti",
     "stix2",
     "taxii2-client",
     "web3"
 ]
+
 
 [project.optional-dependencies]
 cloud = ["openstacksdk", "kubernetes", "python-hcl2"]
