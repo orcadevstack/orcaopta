@@ -7,7 +7,7 @@ import time
 from typing import Optional, Dict, Any
 
 from orcaopta.utils.device import DEVICE
-from spark.spark_worker import SparkWorker
+from orcaopta.spark.spark_worker import SparkWorker
 from orcaopta.mcp.worker import MCPWorker
 from orcaopta.node.config import NodeConfig
 from orcaopta.autoscale.decentralized import DecentralizedAutoscaler

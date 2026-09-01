@@ -1,7 +1,7 @@
 import logging
 
 # Correct import path for your SparkWorker
-from spark.spark_worker import SparkWorker
+from orcaopta.spark.spark_worker import SparkWorker
 
 logger = logging.getLogger("orcaopta.mcp.tools.spark")
 

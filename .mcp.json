@@ -2,7 +2,7 @@
   "workers": {
     "orcaopta": {
       "type": "python",
-      "entrypoint": "src.orcaopta.mcp:worker",
+      "entrypoint": "orcaopta.mcp:worker",
       "env": {
         "ORCAOPTA_MODE": "cluster",
         "ORCAOPTA_CONFIG": "/app/configs/orcaopta.yaml"

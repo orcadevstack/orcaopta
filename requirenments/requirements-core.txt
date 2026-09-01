@@ -4,11 +4,6 @@ python-multipart
 pydantic
 requests
 
-torch
-torchvision
-tensorflow
-keras
-
 SQLAlchemy
 alembic
 
@@ -19,25 +14,11 @@ opentelemetry-exporter-otlp-proto-http
 cryptography
 ossaudit
 
-shap
-
-openstacksdk
-kubernetes
-python-hcl2
 minio
 pyyaml
-py4j
-kafka-python
-
 
 rich
 python-dotenv
 typer
 orjson
-pyyaml
-
-attackcti
-stix2
-taxii2-client
-web3
 click

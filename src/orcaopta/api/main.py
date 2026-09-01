@@ -8,14 +8,14 @@ from pydantic import BaseModel
 from orcaopta.bootstrap.handshake import handshake
 from orcaopta.bootstrap.wizard import wizard
 from orcaopta.ai.llm import llm
-from orcaopta.core.security.attack_mapping import analyze_cloud_graph
+from orcaopta.security.attack_mapping import analyze_cloud_graph
 from orcaopta.tracking.client import OrcaoptaTracker
 from orcaopta.tracing.setup import setup_tracing
 from orcaopta.core.mode import detect_mode
 from orcaopta.core.config import load_config
 from orcaopta.core.events import get_events
 from orcaopta.cloud.detect.graph import build_cloud_graph
-from orcaopta.core.security.encryption import encrypt, decrypt
+from orcaopta.security.encryption import encrypt, decrypt
 from orcaopta.api.routes import system
 from orcaopta.cloud.detect.detect import detect_all
 from orcaopta.cloud.detect.autofix import auto_fix_configs

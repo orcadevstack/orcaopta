@@ -2,8 +2,8 @@ import joblib
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
-from src.orcaopta.ml.preprocess import clean, normalize, train_test_split
-from src.orcaopta.ml.config import ANOMALY_MODEL
+from orcaopta.ml.preprocess import clean, normalize, train_test_split
+from orcaopta.ml.config import ANOMALY_MODEL
 
 from orcaopta.utils.tracing import setup_tracing
 tracer = setup_tracing()

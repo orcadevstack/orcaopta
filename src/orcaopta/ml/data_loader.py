@@ -4,7 +4,7 @@ import io
 import os
 
 from orcaopta.utils.tracing import setup_tracing
-from src.orcaopta.core.security.encryption import decrypt
+from orcaopta.security.encryption import decrypt
 from src.orcaopta.core.config import load_config
 
 tracer = setup_tracing()

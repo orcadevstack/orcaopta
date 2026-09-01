@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from typing import Dict, Any, List, Optional
 
-from src.graph.cloud_graph_engine import get_cached_cloud_graph
+from orcaopta.graph.cloud_graph_engine import get_cached_cloud_graph
 
 # ML / RL
 from orcaopta.ml import anomaly_detection, model_utils, autoscaling
