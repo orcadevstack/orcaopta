@@ -31,6 +31,7 @@ COPY spark_config.json /app/spark_config.json
 COPY requirenments/requirements-core.txt /app/requirements-core.txt
 COPY orcaopta.yaml /app/orcaopta.yaml
 
+
 RUN pip install -r /app/requirements-core.txt
 RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 RUN pip install python-openstackclient setuptools
@@ -48,6 +49,8 @@ RUN npm run build
 # Entrypoint
 # ---------------------------------------------------------
 WORKDIR /app
+ENV PYTHONPATH="/app"
+
 COPY ../scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

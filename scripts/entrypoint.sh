@@ -29,6 +29,7 @@ alembic upgrade head
 # ---------------------------------------------------------
 export ORCAOPTA_OTLP_ENDPOINT=${ORCAOPTA_OTLP_ENDPOINT:-"http://localhost:5000/v1/traces"}
 export ORCAOPTA_EXPERIMENT_ID=${ORCAOPTA_EXPERIMENT_ID:-"0"}
+export PYTHONPATH="/app"
 
 # ---------------------------------------------------------
 # Detect Cloud Components

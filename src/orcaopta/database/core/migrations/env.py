@@ -1,3 +1,8 @@
+import sys
+sys.path.append("/app")
+from orcaopta.database.core.models import Base
+from orcaopta.database.core.engine import engine
+
 from logging.config import fileConfig
 from alembic import context
 
@@ -7,10 +12,6 @@ config = context.config
 # Logging
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# Import your SQLAlchemy Base
-from orcaopta.database.core.models import Base
-from orcaopta.database.core.engine import engine
 
 target_metadata = Base.metadata
 
