@@ -1,4 +1,4 @@
-from src.orcaopta.controller.self_heal import (
+from orcaopta.controller.self_heal import (
     is_openstack_available,
     is_kubernetes_available,
     is_terraform_available,

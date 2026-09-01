@@ -3,6 +3,10 @@ uvicorn[standard]
 python-multipart
 pydantic
 requests
+torch
+torchvision
+keras
+tensorflow
 SQLAlchemy
 opentelemetry-api
 opentelemetry-sdk

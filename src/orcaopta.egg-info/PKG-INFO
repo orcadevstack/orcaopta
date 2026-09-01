@@ -20,6 +20,10 @@ Requires-Dist: uvicorn[standard]
 Requires-Dist: python-multipart
 Requires-Dist: pydantic
 Requires-Dist: requests
+Requires-Dist: torch
+Requires-Dist: torchvision
+Requires-Dist: keras
+Requires-Dist: tensorflow
 Requires-Dist: SQLAlchemy
 Requires-Dist: opentelemetry-api
 Requires-Dist: opentelemetry-sdk

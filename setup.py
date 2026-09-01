@@ -80,7 +80,11 @@ setup(
             "networkx",
             "pyvis",
             "scikit-learn",
-            "joblib"
+            "joblib",
+            "torch",
+            "torchvision",
+            "keras",
+            "tensorflow",
         ],
         "dev": [
             "pytest",

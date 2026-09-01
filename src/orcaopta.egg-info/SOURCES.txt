@@ -23,6 +23,8 @@ src/graph/healing_timeline.py
 src/graph/pyvis_renderer.py
 src/graph/themes.py
 src/graph/topology.py
+src/orcaopta/mcp.py
+src/orcaopta/mcp_client.py
 src/orcaopta.egg-info/PKG-INFO
 src/orcaopta.egg-info/SOURCES.txt
 src/orcaopta.egg-info/dependency_links.txt
@@ -74,9 +76,7 @@ src/orcaopta/core/security/encryption.py
 src/orcaopta/mcp/__init__.py
 src/orcaopta/mcp/banner.py
 src/orcaopta/mcp/config.py
-src/orcaopta/mcp/mcp.py
 src/orcaopta/mcp/mcp_admin.py
-src/orcaopta/mcp/mcp_client.py
 src/orcaopta/mcp/server.py
 src/orcaopta/mcp/tool.py
 src/orcaopta/mcp/tools_blockchain.py
