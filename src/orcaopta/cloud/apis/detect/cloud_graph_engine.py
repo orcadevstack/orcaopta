@@ -1,7 +1,7 @@
 import threading
 import time
 
-from orcaopta.cloud.detect.graph import build_cloud_graph
+from orcaopta.cloud.apis.detect.graph import build_cloud_graph
 
 # ---------------------------------------------------------
 #  CLOUD GRAPH ENGINE

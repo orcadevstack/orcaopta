@@ -4,12 +4,19 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.core
     container_name: orcaopta
-    ports:
-      - "8000:8000"
+
     environment:
-      ORCAOPTA_ENCRYPTION_KEY: "${ORCAOPTA_ENCRYPTION_KEY}"
-      ORCAOPTA_MODE: core
+      ORCAOPTA_MASTER_KEY: "${ORCAOPTA_MASTER_KEY:-}"
+      ORCAOPTA_DB_KEY: "${ORCAOPTA_DB_KEY:-}"
+      ORCAOPTA_ARTIFACT_KEY: "${ORCAOPTA_ARTIFACT_KEY:-}"
+      ORCAOPTA_CLUSTER_KEY: "${ORCAOPTA_CLUSTER_KEY:-}"
+      ORCAOPTA_REPLICATION_KEY: "${ORCAOPTA_REPLICATION_KEY:-}"
+      ORCAOPTA_OTS_KEY: "${ORCAOPTA_OTS_KEY:-}"
+      ORCAOPTA_VECTOR_KEY: "${ORCAOPTA_VECTOR_KEY:-}"
+
+      ORCAOPTA_MODE: "dev"
       PYTHONUNBUFFERED: "1"
+
     volumes:
       - ../mlruns:/app/mlruns
       - ../data:/app/data
@@ -17,7 +24,6 @@ services:
       - ../src:/app/src
 
     restart: unless-stopped
+
     command: >
-      uvicorn orcaopta.api.main:app
-      --host 0.0.0.0
-      --port 8000
+      python -m orcaopta

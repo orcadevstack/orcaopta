@@ -94,7 +94,7 @@ from functools import lru_cache
 from src.orcaopta.cloud.openstack.inventory import build_topology as os_topology
 from src.orcaopta.cloud.openstack.network_audit import audit_network as os_network_audit
 from src.orcaopta.cloud.openstack.storage_audit import audit_storage as os_storage_audit
-from src.orcaopta.cloud.terraform.plan_audit import audit_terraform_plan
+from orcaopta.cloud.apis.saas.audit import audit_terraform_plan
 
 try:
     from src.orcaopta.cloud.kubernetes.config_audit import audit_kubernetes_config

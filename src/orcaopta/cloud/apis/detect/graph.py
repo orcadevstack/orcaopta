@@ -4,7 +4,7 @@ from orcaopta.cloud.openstack.storage_audit import audit_storage as os_storage_a
 
 # --- Terraform safe import ---
 try:
-    from orcaopta.cloud.terraform.plan_audit import audit_terraform_plan
+    from orcaopta.cloud.apis.saas.audit import audit_terraform_plan
 except Exception:
     def audit_terraform_plan():
         return []

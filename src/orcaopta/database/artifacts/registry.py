@@ -1,9 +1,9 @@
 import os
-from .storage.local import LocalStorage
-from .storage.ceph import CephStorage
-from .storage.swift import SwiftStorage
-from .storage.s3 import S3Storage
-from .storage.minio import MinioStorage
+from ...storage.local import LocalStorage
+from ...storage.ceph import CephStorage
+from ...storage.swift import SwiftStorage
+from ...storage.s3 import S3Storage
+from ...storage.minio import MinioStorage
 from .resolver import resolve_path
 from .indexer import index_artifact
 

@@ -1,34 +1,16 @@
-# ============================================================
-# Orcaopta Global Configuration
-# ============================================================
-
 orcaopta:
   name: "Orcaopta Cloud AI"
-  version: "1.0.0"
-  environment: "production"
+  version: "0.1.0"
+  environment: "Dev"
   mode: "cluster"
-
-# ============================================================
-# API
-# ============================================================
 
 api:
   host: "0.0.0.0"
   port: 8000
   log_level: "info"
 
-# ============================================================
-# Database
-# ============================================================
-
 database:
   url: "sqlite:///orcaopta.db"
-  # For production:
-  # url: "postgresql://orcaopta:pass@db/orcaopta"
-
-# ============================================================
-# Models
-# ============================================================
 
 models:
   directory: "/app/models"
@@ -62,16 +44,8 @@ models:
       - "autoscale_v2.pkl"
       - "autoscale_v3.pkl"
 
-# ============================================================
-# Data
-# ============================================================
-
 data:
   directory: "/app/data/processed"
-
-# ============================================================
-# Cloud Storage (MinIO / S3)
-# ============================================================
 
 cloud_storage:
   enabled: false
@@ -80,27 +54,15 @@ cloud_storage:
   access_key: "encrypted-access-key"
   secret_key: "encrypted-secret-key"
 
-# ============================================================
-# Queue Backend
-# ============================================================
-
 queue:
   backend: "local"
   redis_url: "redis://redis:6379/0"
-
-# ============================================================
-# AI Engine (LLM)
-# ============================================================
 
 ai:
   llm:
     provider: "ollama"
     model: "qwen2.5"
     endpoint: "http://localhost:11434/api/generate"
-
-# ============================================================
-# Autoscaling (GLOBAL)
-# ============================================================
 
 autoscaling:
   enabled: true
@@ -109,77 +71,41 @@ autoscaling:
   cooldown_seconds: 60
 
   policy:
-    gpu_utilization_scale_up_threshold: 70     # %
-    gpu_utilization_scale_down_threshold: 30   # %
-    ml_autoscale_scale_up_threshold: 0.2       # mean > 0.2 → scale up
-    ml_autoscale_scale_down_threshold: -0.2    # mean < -0.2 → scale down
-    hysteresis_margin: 0.05                    # avoid flapping
-
-# ============================================================
-# ML Configuration
-# ============================================================
+    gpu_utilization_scale_up_threshold: 70
+    gpu_utilization_scale_down_threshold: 30
+    ml_autoscale_scale_up_threshold: 0.2
+    ml_autoscale_scale_down_threshold: -0.2
+    hysteresis_margin: 0.05
 
 ml:
-  autoscale: "disabled"   # or "scale_up" / "scale_down"
-
-# ============================================================
-# Security
-# ============================================================
+  autoscale: "disabled"
 
 security:
   encryption_key: "change-this-key"
   allow_public_api: false
 
-# ============================================================
-# Logging
-# ============================================================
-
 logging:
   level: "info"
   file: "/app/logs/orcaopta.log"
-
-# ============================================================
-# Terraform
-# ============================================================
 
 terraform:
   enabled: false
   working_dir: "./terraform"
 
-# ============================================================
-# OpenStack Integration
-# ============================================================
-
 openstack:
   enabled: false
-  group_name: "orcaopta-cluster"   # used by autoscaler
-
-# ============================================================
-# Kubernetes Integration
-# ============================================================
+  group_name: "orcaopta-cluster"
 
 k8s:
   enabled: false
   namespace: "default"
   deployment: "orcaopta-api"
 
-# ============================================================
-# Spark
-# ============================================================
-
 spark:
   enabled: false
 
-# ============================================================
-# Telemetry / Tracing
-# ============================================================
-
 telemetry:
   enabled: false
-
-# ============================================================
-# MITRE ATT&CK
-# ============================================================
 
 attack:
   enabled: false

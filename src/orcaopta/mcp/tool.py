@@ -12,7 +12,7 @@ from orcaopta.database.vector.search import search
 from orcaopta.database.artifacts.indexer import index_artifact
 from orcaopta.utils.device import DEVICE
 from orcaopta.supervisor.supervisor import start_supervisor
-from orcaopta.cloud.detect.cloud_graph_engine import get_cached_cloud_graph
+from orcaopta.cloud.apis.detect.cloud_graph_engine import get_cached_cloud_graph
 
 # Optional subsystems
 try:
@@ -26,7 +26,7 @@ except Exception:
     audit_kubernetes_config = None
 
 try:
-    from orcaopta.cloud.terraform.plan_audit import audit_terraform_plan
+    from orcaopta.cloud.apis.saas.audit import audit_terraform_plan
 except Exception:
     audit_terraform_plan = None
 

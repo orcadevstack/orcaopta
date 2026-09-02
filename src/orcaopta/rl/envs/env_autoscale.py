@@ -1,5 +1,5 @@
 import numpy as np
-from orcaopta.cloud.detect.graph import build_cloud_graph
+from orcaopta.cloud.apis.detect.graph import build_cloud_graph
 from src.ml import autoscaling
 from orcaopta.tracking.client import OrcaoptaTracker
 

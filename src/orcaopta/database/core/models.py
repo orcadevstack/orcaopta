@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     JSON,
     Boolean,
+    LargeBinary,
 )
 
 from orcaopta.core.base import Base
@@ -23,7 +24,7 @@ class ReplicationLog(Base):
     source_node = Column(String, nullable=False)
     target_node = Column(String, nullable=False)
     status = Column(String, nullable=False)      # "success" / "failed"
-    message = Column(String, nullable=True)      # error or info
+    message = Column(LargeBinary, nullable=True) # encrypted
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
@@ -88,7 +89,7 @@ class Artifact(Base):
     type = Column(String, nullable=False)
     hash = Column(String, nullable=False)        # SHA256 or BLAKE3
     size_bytes = Column(Integer, nullable=False)
-    meta = Column(JSON, nullable=True)           # renamed from `metadata`
+    meta = Column(LargeBinary, nullable=True)    # encrypted
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -116,7 +117,7 @@ class OTSRun(Base):
     name = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     status = Column(String, default="running", nullable=False)  # running / completed / failed
-    meta = Column(JSON, nullable=True)                          # renamed from `metadata`
+    meta = Column(LargeBinary, nullable=True)                   # encrypted
 
 
 # ---------------------------------------------------------
@@ -128,7 +129,7 @@ class OTSMetric(Base):
     id = Column(Integer, primary_key=True)
     run_id = Column(String, nullable=False, index=True)
     key = Column(String, nullable=False)
-    value = Column(Float, nullable=True)
+    value = Column(LargeBinary, nullable=True)   # encrypted
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
@@ -141,7 +142,7 @@ class OTSEvent(Base):
     id = Column(Integer, primary_key=True)
     run_id = Column(String, nullable=False, index=True)
     event_type = Column(String, nullable=False)
-    payload = Column(JSON, nullable=True)
+    payload = Column(LargeBinary, nullable=True) # encrypted
     severity = Column(String, default="info", nullable=False)  # info / warn / error / critical
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -156,9 +157,9 @@ class OTSArtifact(Base):
     run_id = Column(String, nullable=False, index=True)
     artifact_id = Column(String, unique=True, nullable=False)
     path = Column(String, nullable=False)
-    type = Column(String, nullable=False)  # model / checkpoint / log / config
+    type = Column(String, nullable=False)        # model / checkpoint / log / config
     hash = Column(String, nullable=True)
     size_bytes = Column(Integer, nullable=True)
-    meta = Column(JSON, nullable=True)     # renamed from `metadata`
+    meta = Column(LargeBinary, nullable=True)    # encrypted
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     active = Column(Boolean, default=True, nullable=False)

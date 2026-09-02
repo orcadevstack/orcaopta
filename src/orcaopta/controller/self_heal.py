@@ -12,7 +12,7 @@ from orcaopta.core.events import add_event
 
 # Cloud Graph
 try:
-    from orcaopta.cloud.detect.graph import build_cloud_graph
+    from orcaopta.cloud.apis.detect.graph import build_cloud_graph
 except Exception:
     build_cloud_graph = None
 
@@ -126,7 +126,7 @@ except Exception:
 
 # --- Terraform ---
 try:
-    from orcaopta.cloud.terraform.plan_audit import (
+    from orcaopta.cloud.apis.saas.audit import (
         audit_terraform_plan,
         execute_terraform_plan,
     )

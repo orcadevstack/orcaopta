@@ -1,5 +1,5 @@
 
-from orcaopta.cloud.openstack.client import get_conn
+from orcaopta.cloud.apis.openstack.client import get_conn
 
 
 def create_server(

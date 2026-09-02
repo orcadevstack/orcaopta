@@ -1,89 +1,67 @@
-import base64
 import os
+import json
 from typing import Union
-
 from cryptography.fernet import Fernet, InvalidToken
 
+def _load_master_key() -> Fernet:
+    master_key = os.getenv("ORCAOPTA_MASTER_KEY")
+    if not master_key:
+        raise RuntimeError("ORCAOPTA_MASTER_KEY is missing")
+    return Fernet(master_key.encode())
 
+def _load_data_key(env_name: str) -> Fernet:
+    encrypted_key = os.getenv(env_name)
+    if not encrypted_key:
+        raise RuntimeError(f"{env_name} is missing")
+    master = _load_master_key()
+    decrypted = master.decrypt(encrypted_key.encode())
+    return Fernet(decrypted)
 
-def _load_key_from_env() -> bytes:
-    """
-    Load the Orcaopta encryption key from environment.
-    If not present, generate a new one (for ephemeral/local use).
-    In production, you should ALWAYS set ORCAOPTA_ENCRYPTION_KEY.
-    """
-    key_str = os.getenv("ORCAOPTA_ENCRYPTION_KEY")
+class EncryptionService:
+    def encrypt(self, key_name: str, data: Union[str, bytes]) -> bytes:
+        f = _load_data_key(key_name)
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        return f.encrypt(data)
 
-    if key_str:
-        # Allow raw Fernet key or base64-encoded
+    def decrypt(self, key_name: str, token: Union[str, bytes]) -> bytes:
+        f = _load_data_key(key_name)
+        if isinstance(token, str):
+            token = token.encode("utf-8")
         try:
-            return key_str.encode("utf-8")
-        except Exception:
-            raise ValueError("Invalid ORCAOPTA_ENCRYPTION_KEY format")
+            return f.decrypt(token)
+        except InvalidToken as e:
+            raise InvalidToken("Decryption failed: invalid token or key") from e
 
-    # Fallback: generate a new key (not persisted!)
-    key = Fernet.generate_key()
-    return key
+    def encrypt_dict(self, key_name: str, data: dict) -> bytes:
+        return self.encrypt(key_name, json.dumps(data))
 
+    def decrypt_dict(self, key_name: str, token: Union[str, bytes]) -> dict:
+        raw = self.decrypt(key_name, token)
+        return json.loads(raw.decode())
 
-def get_fernet() -> Fernet:
-    """
-    Return a Fernet instance using the configured key.
-    """
-    key = _load_key_from_env()
-    return Fernet(key)
+    def generate_data_key(self) -> str:
+        master = _load_master_key()
+        raw = Fernet.generate_key()
+        encrypted = master.encrypt(raw)
+        return encrypted.decode()
 
-
-
-
-def encrypt(plaintext: Union[str, bytes]) -> str:
-    """
-    Encrypt a string/bytes and return a base64-encoded token (str).
-    """
-    f = get_fernet()
-
-    if isinstance(plaintext, str):
-        plaintext_bytes = plaintext.encode("utf-8")
-    else:
-        plaintext_bytes = plaintext
-
-    token = f.encrypt(plaintext_bytes)
-    # Return as UTF-8 string
+def encrypt(data: Union[str, bytes]) -> str:
+    svc = EncryptionService()
+    token = svc.encrypt("ORCAOPTA_DB_KEY", data)
     return token.decode("utf-8")
 
-
 def decrypt(token: Union[str, bytes]) -> str:
-    """
-    Decrypt a token (str/bytes) and return the original string.
-    Raises InvalidToken if the key is wrong or data is corrupted.
-    """
-    f = get_fernet()
-
-    if isinstance(token, str):
-        token_bytes = token.encode("utf-8")
-    else:
-        token_bytes = token
-
-    try:
-        plaintext_bytes = f.decrypt(token_bytes)
-    except InvalidToken as e:
-        raise InvalidToken("Decryption failed: invalid token or key") from e
-
-    return plaintext_bytes.decode("utf-8")
-
-
+    svc = EncryptionService()
+    raw = svc.decrypt("ORCAOPTA_DB_KEY", token)
+    return raw.decode("utf-8")
 
 def encrypt_dict(data: dict) -> str:
-    """
-    Encrypt a dict by JSON-encoding then encrypting.
-    """
-    import json
-    return encrypt(json.dumps(data))
-
+    svc = EncryptionService()
+    token = svc.encrypt_dict("ORCAOPTA_DB_KEY", data)
+    return token.decode("utf-8")
 
 def decrypt_dict(token: Union[str, bytes]) -> dict:
-    """
-    Decrypt a token into a dict.
-    """
-    import json
-    return json.loads(decrypt(token))
+    svc = EncryptionService()
+    raw = svc.decrypt_dict("ORCAOPTA_DB_KEY", token)
+    return raw

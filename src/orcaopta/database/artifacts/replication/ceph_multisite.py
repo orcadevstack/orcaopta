@@ -1,5 +1,5 @@
 
-from orcaopta.database.artifacts.storage.ceph import CephStorage
+from orcaopta.storage.ceph import CephStorage
 
 def replicate_ceph_multisite(src_object: str, sites: list[dict]):
     """

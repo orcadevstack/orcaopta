@@ -1,0 +1,105 @@
+# ============================================================
+# ORCAOPTA CORE REQUIREMENTS
+# Lightweight, cloud-operator-safe dependency manifest
+# ============================================================
+
+pyyaml:
+  pip_release: pyyaml
+  minimum: "6.0"
+  max_major_version: 7
+
+rich:
+  pip_release: rich
+  minimum: "13.0"
+  max_major_version: 14
+
+python-dotenv:
+  pip_release: python-dotenv
+  minimum: "1.0.0"
+  max_major_version: 2
+
+typer:
+  pip_release: typer
+  minimum: "0.9.0"
+  max_major_version: 1
+
+orjson:
+  pip_release: orjson
+  minimum: "3.9.0"
+  max_major_version: 4
+
+click:
+  pip_release: click
+  minimum: "8.0.0"
+  max_major_version: 9
+
+# ============================================================
+# CLOUD BACKENDS
+# ============================================================
+
+minio:
+  pip_release: minio
+  minimum: "7.1.0"
+  max_major_version: 8
+
+cryptography:
+  pip_release: cryptography
+  minimum: "41.0.0"
+  max_major_version: 43
+
+ossaudit:
+  pip_release: ossaudit
+  minimum: "0.1.0"
+  max_major_version: 1
+
+# ============================================================
+# OPTIONAL ML (SMALL FOOTPRINT)
+# ============================================================
+
+sentence-transformers:
+  pip_release: sentence-transformers
+  minimum: "2.2.0"
+  max_major_version: 3
+
+faiss-cpu:
+  pip_release: faiss-cpu
+  minimum: "1.7.4"
+  max_major_version: 2
+
+# ============================================================
+# OPTIONAL CLOUD BACKENDS
+# ============================================================
+
+openstacksdk:
+  pip_release: openstacksdk
+  minimum: "1.0.0"
+  max_major_version: 2
+
+kubernetes:
+  pip_release: kubernetes
+  minimum: "28.0.0"
+  max_major_version: 29
+
+python-hcl2:
+  pip_release: python-hcl2
+  minimum: "4.3.0"
+  max_major_version: 5
+
+# ============================================================
+# OPTIONAL SPARK BACKEND
+# ============================================================
+
+pyspark:
+  pip_release: pyspark
+  minimum: "3.5.0"
+  max_major_version: 4
+
+py4j:
+  pip_release: py4j
+  minimum: "0.10.9"
+  max_major_version: 1
+
+kafka-python:
+  pip_release: kafka-python
+  minimum: "2.0.0"
+  max_major_version: 3

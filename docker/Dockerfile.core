@@ -26,6 +26,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # ---------------------------------------------------------
 WORKDIR /app
 
+RUN mkdir -p /app/data
+
 # ---------------------------------------------------------
 # Copy full project correctly
 # ---------------------------------------------------------
@@ -44,8 +46,8 @@ ENV PYTHONPATH="/app/src"
 # Install Python dependencies
 # ---------------------------------------------------------
 RUN pip install -r /app/requirements-core.txt
-RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-RUN pip install python-openstackclient setuptools
+# RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+RUN pip install setuptools
 
 # ---------------------------------------------------------
 # Frontend (Next.js)

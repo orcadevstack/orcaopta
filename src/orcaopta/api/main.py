@@ -14,11 +14,11 @@ from orcaopta.tracing.setup import setup_tracing
 from orcaopta.core.mode import detect_mode
 from orcaopta.core.config import load_config
 from orcaopta.core.events import get_events
-from orcaopta.cloud.detect.graph import build_cloud_graph
+from orcaopta.cloud.apis.detect.graph import build_cloud_graph
 from orcaopta.security.encryption import encrypt, decrypt
 from orcaopta.api.routes import system
-from orcaopta.cloud.detect.detect import detect_all
-from orcaopta.cloud.detect.autofix import auto_fix_configs
+from orcaopta.cloud.apis.detect.detect import detect_all
+from orcaopta.cloud.apis.detect.autofix import auto_fix_configs
 
 from orcaopta.supervisor.supervisor import start_supervisor, get_supervisor
 

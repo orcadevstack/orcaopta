@@ -5,75 +5,46 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orcaopta"
 version = "0.1.0"
-description = "Cloud-native SRE automation framework with MCP, observability, operator tooling, and intelligent remediation."
+description = "Multi-cloud operator brain for SRE automation, observability, and intelligent remediation."
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.13.5"
+requires-python = ">=3.10"
 
 authors = [
     { name = "Samuel Orcas", email = "orcaprojectstack@gmail.com" }
 ]
 
 keywords = [
-    "sre", "mcp", "observability", "cloud", "automation",
-    "openstack", "kubernetes", "telemetry", "autoscaling"
+    "sre", "cloud-operator", "observability", "automation",
+    "openstack", "kubernetes", "ceph", "minio", "spark", "terraform"
 ]
 
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
-    "Framework :: FastAPI",
     "Topic :: System :: Monitoring",
     "Topic :: System :: Distributed Computing"
 ]
 
 dependencies = [
-    # API Framework
-    "fastapi",
-    "uvicorn[standard]",
-    "python-multipart",
-    "pydantic",
-    "requests",
-    "torch",
-    "torchvision",
-    "keras",
-    "tensorflow",
-
-
-    # Database / ORM
-    "SQLAlchemy",
-    "alembic",
-
-    # Observability
-    "opentelemetry-api",
-    "opentelemetry-sdk",
-    "opentelemetry-exporter-otlp-proto-http",
-
-    # Security
-    "cryptography",
-    "ossaudit",
-
-    # CLI + Config
+    # Core utilities
+    "pyyaml",
     "rich",
-    "click",
     "python-dotenv",
     "typer",
     "orjson",
-    "pyyaml",
+    "click",
 
-    # Threat Intel / Blockchain
-    "attackcti",
-    "stix2",
-    "taxii2-client",
-    "web3"
+    # Cloud backends
+    "minio",
+    "cryptography",
+    "ossaudit",
+
+    # Optional ML (small footprint)
+    #"sentence-transformers",
+    #"faiss-cpu"
 ]
-
-[project.optional-dependencies]
-cloud = ["openstacksdk", "kubernetes", "python-hcl2"]
-dashboard = ["matplotlib>=3.11", "seaborn", "plotly", "pyvis", "networkx", "streamlit"]
-explain = ["shap"]
-dev = ["pytest", "black", "flake8", "mypy", "pre-commit"]
 
 [project.scripts]
 orcaopta = "orcaopta.cli.orcaopta_cli:app"

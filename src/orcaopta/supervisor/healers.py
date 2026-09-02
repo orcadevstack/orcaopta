@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 
 from orcaopta.supervisor.supervisor import apply_autoscale_decision
 from orcaopta.ai.agent import ai_self_heal_plan
-from orcaopta.cloud.detect.graph import build_cloud_graph
+from orcaopta.cloud.apis.detect.graph import build_cloud_graph
 from orcaopta.cloud.openstack.network_audit import fix_network_issues
 from orcaopta.cloud.kubernetes.config_audit import fix_kubernetes_config
 from orcaopta.ml import model_utils

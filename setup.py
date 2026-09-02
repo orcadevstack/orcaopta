@@ -3,97 +3,33 @@ from setuptools import setup, find_packages
 setup(
     name="orcaopta",
     version="0.1.0",
-    description="Cloud-native SRE automation framework with ML, RL, observability, and intelligent remediation.",
+    description="Multi-cloud operator brain for SRE automation, observability, and intelligent remediation.",
     author="Samuel",
     author_email="orcaprojectstack@gmail.com",
     license="MIT",
+
     packages=find_packages("src"),
     package_dir={"": "src"},
-    python_requires=">=3.13.5",
+    python_requires=">=3.10",
 
     install_requires=[
-        "fastapi",
-        "uvicorn[standard]",
-        "python-multipart",
-        "pydantic",
-        "requests",
-        "pandas",
-        "numpy",
-        "scikit-learn",
-        "joblib",
-        "stable-baselines3",
-        "gymnasium",
-        "SQLAlchemy",
-        "opentelemetry-api",
-        "opentelemetry-sdk",
-        "opentelemetry-exporter-otlp-proto-http",
-        "cryptography",
-        "ossaudit",
-        "hoppr-cop",
+        # Core utilities
+        "pyyaml",
         "rich",
         "python-dotenv",
         "typer",
         "orjson",
-        "pyyaml",
-    ],
+        "click",
 
-    extras_require={
-        "dashboard": [
-            "matplotlib>=3.11",
-            "seaborn",
-            "plotly",
-            "pyvis",
-            "networkx",
-            "streamlit"
-        ],
-        "cloud": [
-            "openstacksdk",
-            "kubernetes",
-            "python-hcl2"
-        ],
-        "spark": [
-            "pyspark",
-            "py4j",
-            "kafka-python"
-        ],
-        "explain": [
-            "shap"
-        ],
-        "mlflow-legacy": [
-            "mlflow",
-            "protobuf",
-            "sqlalchemy",
-            "alembic"
-        ],
-        "notebooks": [
-            "jupyter",
-            "notebook",
-            "jupyterlab",
-            "ipython",
-            "ipykernel",
-            "pyzmq",
-            "pandas",
-            "numpy",
-            "matplotlib",
-            "seaborn",
-            "plotly",
-            "networkx",
-            "pyvis",
-            "scikit-learn",
-            "joblib",
-            "torch",
-            "torchvision",
-            "keras",
-            "tensorflow",
-        ],
-        "dev": [
-            "pytest",
-            "black",
-            "flake8",
-            "mypy",
-            "pre-commit"
-        ]
-    },
+        # Cloud backends
+        "minio",
+        "cryptography",
+        "ossaudit",
+
+        # Optional ML (small footprint)
+        #"sentence-transformers",
+       # "faiss-cpu",
+    ],
 
     include_package_data=True,
 )

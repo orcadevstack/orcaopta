@@ -1,25 +1,37 @@
-import os
-from orcaopta.database.core.session import SessionLocal
-from .models import Artifact
-from .hashing import sha256_file
+import faiss
+import numpy as np
+from orcaopta.security.encryption import EncryptionService
 
-def index_artifact(path: str, type: str, metadata: dict = None, version: int = 1):
-    session = SessionLocal()
+enc = EncryptionService()
 
-    size_bytes = os.path.getsize(path)
-    file_hash = sha256_file(path)
 
-    artifact = Artifact(
-        path=path,
-        type=type,
-        hash=file_hash,
-        size_bytes=size_bytes,
-        metadata=metadata,
-        version=version
-    )
+class EncryptedFaissIndex:
+    def __init__(self, dim: int = 384):
+        self.dim = dim
+        self.index = faiss.IndexFlatL2(dim)
 
-    session.add(artifact)
-    session.commit()
-    session.close()
+    def add_vectors(self, vecs: np.ndarray):
+        self.index.add(vecs)
 
-    return artifact.id
+    def search(self, query: np.ndarray, k: int = 5):
+        D, I = self.index.search(query.reshape(1, -1), k)
+        return D[0], I[0]
+
+    def serialize_encrypted(self) -> bytes:
+        raw = faiss.serialize_index(self.index)
+        return enc.encrypt("ORCAOPTA_VECTOR_KEY", raw)
+
+    def load_encrypted(self, blob: bytes):
+        raw = enc.decrypt("ORCAOPTA_VECTOR_KEY", blob)
+        self.index = faiss.deserialize_index(raw)
+
+
+_global_index = EncryptedFaissIndex()
+
+
+def add_vectors(vecs: np.ndarray):
+    _global_index.add_vectors(vecs)
+
+
+def search_vectors(query: np.ndarray, k: int = 5):
+    return _global_index.search(query, k)

@@ -1,6 +1,6 @@
 import os
 import logging
-from orcaopta.cloud.detect.detect import detect_all
+from orcaopta.cloud.apis.detect.detect import detect_all
 
 logger = logging.getLogger("orcaopta.autofix")
 
